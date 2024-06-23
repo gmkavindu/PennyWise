@@ -1,56 +1,53 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import Register from './components/auth/Register';
 import Login from './components/auth/Login';
 import Dashboard from './components/Dashboard';
+import Profile from './components/Profile';
+import './App.css';
+import { AuthProvider, useAuth } from './authContext'; // Import AuthProvider and useAuth hook from authContext
 
-function App() {
-  const containerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-  };
+// ProtectedRoute component to protect routes that require authentication
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
 
-  const buttonContainerStyle = {
-    marginTop: '20px',
-  };
+  // Render children if authenticated, otherwise redirect to login
+  return isAuthenticated ? children : <Navigate to="/login" />;
+}
 
-  const buttonStyle = {
-    marginLeft: '10px',
-    padding: '10px 20px',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    textDecoration: 'none',
-  };
+// HomePage component to display when user is not authenticated
+function HomePage() {
+  const { isAuthenticated } = useAuth();
 
+  // Redirect to dashboard if authenticated, otherwise display welcome message and login/register links
   return (
-    <Router>
-      <div className="App" style={containerStyle}>
+    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+      <h1>Welcome to the App</h1>
+      {!isAuthenticated && (
+        <>
+          <Link to="/register" className="app-link" style={{ marginRight: '10px' }}>Register</Link>
+          <Link to="/login" className="app-link">Login</Link>
+        </>
+      )}
+      {isAuthenticated && <Navigate to="/dashboard" />}
+    </div>
+  );
+}
+
+// App component that sets up routing and wraps with AuthProvider for authentication context
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
         <Routes>
-          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/" element={
-            <div>
-              <h1>Welcome to the App</h1>
-              <div style={{ ...buttonContainerStyle, textAlign: 'center' }}>
-                <Link to="/register">
-                  <button style={buttonStyle}>Register</button>
-                </Link>
-                <Link to="/login">
-                  <button style={buttonStyle}>Login</button>
-                </Link>
-              </div>
-            </div>
-          } />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
