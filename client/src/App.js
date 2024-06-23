@@ -4,6 +4,7 @@ import Register from './components/auth/Register';
 import Login from './components/auth/Login';
 import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
+import ExpenseManager from './components/expenses/ExpenseManager';
 import './App.css';
 import { AuthProvider, useAuth } from './authContext'; // Import AuthProvider and useAuth hook from authContext
 
@@ -45,6 +46,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/expenses" element={<ProtectedRoute><ExpenseManager /></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

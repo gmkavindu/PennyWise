@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../authContext';
+import Navbar from './Navbar';
 
-// Styles for the container and buttons
 const containerStyle = {
   maxWidth: '600px',
   margin: '0 auto',
@@ -30,38 +30,47 @@ const buttonStyle = {
 };
 
 const Dashboard = () => {
-  const { logout } = useAuth(); // Access logout function from useAuth hook
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
-  // Function to handle logout process
   const handleLogout = () => {
-    logout(); // Clears authentication state
-    localStorage.removeItem('token'); // Removes token from localStorage
-    navigate('/'); // Redirects to the root page after logout
+    logout();
+    localStorage.removeItem('token');
+    navigate('/');
   };
 
-  // Function to navigate to the profile editing page
   const handleEditProfile = () => {
     navigate('/profile');
   };
 
+  const handleGoToExpenses = () => {
+    navigate('/expenses');
+  };
+
   return (
-    <div style={containerStyle}>
-      <h2>Welcome to Your Dashboard</h2>
-      <div style={buttonContainerStyle}>
-        {/* Logout button */}
-        <button style={buttonStyle} onClick={handleLogout}>
-          Logout
-        </button>
-        {/* Edit profile button */}
-        <button
-          style={{ ...buttonStyle, backgroundColor: '#28a745' }}
-          onClick={handleEditProfile}
-        >
-          Edit Profile
-        </button>
+    <>
+      <Navbar />
+      <div style={containerStyle}>
+        <h2>Welcome to Your Dashboard</h2>
+        <div style={buttonContainerStyle}>
+          <button style={buttonStyle} onClick={handleLogout}>
+            Logout
+          </button>
+          <button
+            style={{ ...buttonStyle, backgroundColor: '#28a745' }}
+            onClick={handleEditProfile}
+          >
+            Edit Profile
+          </button>
+          <button
+            style={{ ...buttonStyle, backgroundColor: '#17a2b8' }}
+            onClick={handleGoToExpenses}
+          >
+            Manage Expenses
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
