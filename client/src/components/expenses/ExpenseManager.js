@@ -5,40 +5,60 @@ import ExpenseTable from './ExpenseTable';
 import Navbar from '../Navbar';
 
 const containerStyle = {
-    maxWidth: '800px',
-    margin: '0 auto',
-    padding: '20px',
-    backgroundColor: '#f9f9f9',
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-  };
+  maxWidth: '800px',
+  margin: '0 auto',
+  padding: '20px',
+  backgroundColor: '#f9f9f9',
+  border: '1px solid #ddd',
+  borderRadius: '5px',
+  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+};
 
 const ExpenseManager = () => {
   const [expenses, setExpenses] = useState([]);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
 
   useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        const response = await axios.get('/api/expenses', {
+    fetchExpenses();
+  }, []);
+
+  const fetchExpenses = async () => {
+    try {
+      const response = await axios.get('/api/expenses', {
+        headers: {
+          'x-auth-token': localStorage.getItem('token')
+        }
+      });
+      setExpenses(response.data);
+    } catch (error) {
+      console.error('Error fetching expenses!', error);
+    }
+  };
+
+  const handleSave = async (expense) => {
+    try {
+      let updatedExpenses;
+      if (expenseToEdit && expenseToEdit._id) {
+        // Update existing expense
+        const response = await axios.put(`/api/expenses/${expenseToEdit._id}`, expense, {
           headers: {
             'x-auth-token': localStorage.getItem('token')
           }
         });
-        setExpenses(response.data);
-      } catch (error) {
-        console.error('Error fetching expenses!', error);
+        updatedExpenses = expenses.map(exp => (exp._id === expenseToEdit._id ? response.data : exp));
+      } else {
+        // Add new expense
+        const response = await axios.post('/api/expenses', expense, {
+          headers: {
+            'x-auth-token': localStorage.getItem('token')
+          }
+        });
+        updatedExpenses = [...expenses, response.data];
       }
-    };
-    fetchExpenses();
-  }, []);
-
-  const handleSave = (expense) => {
-    if (expenseToEdit) {
-      setExpenses(expenses.map(exp => (exp._id === expense._id ? expense : exp)));
-    } else {
-      setExpenses([...expenses, expense]);
+      setExpenses(updatedExpenses);
+      setExpenseToEdit(null); // Clear edit mode after save
+    } catch (error) {
+      console.error('Error saving expense!', error);
     }
   };
 

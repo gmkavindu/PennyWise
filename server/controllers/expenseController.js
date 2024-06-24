@@ -1,4 +1,5 @@
 const Expense = require('../models/Expense');
+const mongoose = require('mongoose');
 
 // Add a new expense
 exports.addExpense = async (req, res) => {
@@ -55,14 +56,16 @@ exports.updateExpense = async (req, res) => {
 // Delete an expense by ID
 exports.deleteExpense = async (req, res) => {
   try {
-    let expense = await Expense.findById(req.params.id);
-    if (!expense) return res.status(404).json({ msg: 'Expense not found' });
-
-    if (expense.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
+    const expenseId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(expenseId)) {
+      return res.status(400).json({ msg: 'Invalid expense ID' });
     }
 
-    await Expense.findByIdAndRemove(req.params.id);
+    let expense = await Expense.findOneAndDelete({ _id: expenseId, user: req.user.id });
+
+    if (!expense) {
+      return res.status(404).json({ msg: 'Expense not found' });
+    }
 
     res.json({ msg: 'Expense removed' });
   } catch (err) {
