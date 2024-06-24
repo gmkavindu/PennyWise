@@ -5,36 +5,17 @@ const mongoose = require('mongoose');
 exports.addExpense = async (req, res) => {
   try {
     const { amount, category, date, description } = req.body;
-
-    // Check if an expense with the same details already exists for the user
-    const existingExpense = await Expense.findOne({
-      amount,
-      category,
-      date,
-      user: req.user.id, // Assuming req.user contains the authenticated user's ID
-    });
-
-    if (existingExpense) {
-      return res.status(400).json({ msg: 'Expense with these details already exists' });
-    }
-
-    // Create a new expense
     const newExpense = new Expense({
       amount,
       category,
       date,
       description,
-      user: req.user.id,
+      user: req.user.id,  // Assuming req.user contains the authenticated user's ID
     });
-
     const expense = await newExpense.save();
     res.json(expense);
   } catch (err) {
     console.error(err.message);
-    if (err.code === 11000 && err.keyPattern && err.keyPattern.user) {
-      // Handling MongoDB duplicate key error (E11000)
-      return res.status(400).json({ msg: 'Expense with these details already exists' });
-    }
     res.status(500).send('Server Error');
   }
 };
@@ -42,7 +23,7 @@ exports.addExpense = async (req, res) => {
 // Get all expenses for the authenticated user
 exports.getExpenses = async (req, res) => {
   try {
-    const expenses = await Expense.find({ user: req.user.id }); // Filter by authenticated user's ID
+    const expenses = await Expense.find({ user: req.user.id });  // Filter by authenticated user's ID
     res.json(expenses);
   } catch (err) {
     console.error(err.message);
