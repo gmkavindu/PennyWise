@@ -1,4 +1,3 @@
-// src/components/budgets/BudgetManager.js
 import React, { useState, useEffect } from 'react';
 import BudgetForm from './BudgetForm';
 import BudgetList from './BudgetList';
@@ -7,7 +6,7 @@ import { fetchBudgets, addBudget, deleteBudget, updateBudget } from '../../servi
 
 const containerStyle = {
   maxWidth: '800px',
-  margin: '0 auto',
+  margin: '20px auto',
   padding: '20px',
   backgroundColor: '#f9f9f9',
   border: '1px solid #ddd',
@@ -63,6 +62,7 @@ const BudgetManager = () => {
     <div>
       <Navbar />
       <div style={containerStyle}>
+        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Budget Manager</h2>
         <BudgetForm onSave={handleSave} budgetToEdit={budgetToEdit} clearEdit={() => setBudgetToEdit(null)} />
         <BudgetList budgets={budgets} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
