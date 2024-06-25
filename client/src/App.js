@@ -1,3 +1,4 @@
+// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import Register from './components/auth/Register';
@@ -5,6 +6,7 @@ import Login from './components/auth/Login';
 import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
 import ExpenseManager from './components/expenses/ExpenseManager';
+import BudgetManager from './components/budgets/BudgetManager'; // Import BudgetManager
 import './App.css';
 import { AuthProvider, useAuth } from './authContext'; // Import AuthProvider and useAuth hook from authContext
 
@@ -47,6 +49,7 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/expenses" element={<ProtectedRoute><ExpenseManager /></ProtectedRoute>} />
+          <Route path="/budgets" element={<ProtectedRoute><BudgetManager /></ProtectedRoute>} /> {/* New Budget route */}
         </Routes>
       </Router>
     </AuthProvider>

@@ -34,6 +34,7 @@ const Navbar = () => {
         <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
         <Link to="/profile" style={linkStyle}>Profile</Link>
         <Link to="/expenses" style={linkStyle}>Expenses</Link>
+        <Link to="/budgets" style={linkStyle}>Budgets</Link> {/* New Budget link */}
       </div>
       <button onClick={handleLogout} style={{ ...linkStyle, backgroundColor: 'red', padding: '5px 10px', borderRadius: '5px' }}>
         Logout
