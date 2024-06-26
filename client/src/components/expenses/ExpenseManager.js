@@ -16,49 +16,81 @@ const containerStyle = {
 
 const ExpenseManager = () => {
   const [expenses, setExpenses] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const response = await axios.get('/api/expenses', {
+          headers: {
+            'x-auth-token': localStorage.getItem('token'),
+          },
+        });
+        setExpenses(response.data);
+      } catch (error) {
+        console.error('Error fetching expenses:', error);
+      }
+    };
+
+    const fetchBudgets = async () => {
+      try {
+        const response = await axios.get('/api/budgets', {
+          headers: {
+            'x-auth-token': localStorage.getItem('token'),
+          },
+        });
+        setBudgets(response.data);
+      } catch (error) {
+        console.error('Error fetching budgets:', error);
+      }
+    };
+
     fetchExpenses();
+    fetchBudgets();
   }, []);
 
-  const fetchExpenses = async () => {
-    try {
-      const response = await axios.get('/api/expenses', {
-        headers: {
-          'x-auth-token': localStorage.getItem('token')
-        }
-      });
-      setExpenses(response.data);
-    } catch (error) {
-      console.error('Error fetching expenses!', error);
-    }
-  };
-
   const handleSave = async (expense) => {
+    setAlertMessage('');
+
     try {
+      const budgetForCategory = budgets.find((b) => b.category === expense.category);
+      if (budgetForCategory) {
+        const totalExpenseForCategory = expenses.reduce((total, exp) => {
+          if (exp.category === expense.category) {
+            return total + exp.amount;
+          }
+          return total;
+        }, 0);
+
+        const newTotal = totalExpenseForCategory + parseFloat(expense.amount);
+        if (newTotal > budgetForCategory.limit) {
+          setAlertMessage(`Adding this expense exceeds the budget limit for ${expense.category}`);
+          return;
+        }
+      }
+
       let updatedExpenses;
       if (expenseToEdit && expenseToEdit._id) {
-        // Update existing expense
         const response = await axios.put(`/api/expenses/${expenseToEdit._id}`, expense, {
           headers: {
-            'x-auth-token': localStorage.getItem('token')
-          }
+            'x-auth-token': localStorage.getItem('token'),
+          },
         });
-        updatedExpenses = expenses.map(exp => (exp._id === expenseToEdit._id ? response.data : exp));
+        updatedExpenses = expenses.map((exp) => (exp._id === expenseToEdit._id ? response.data : exp));
       } else {
-        // Add new expense
         const response = await axios.post('/api/expenses', expense, {
           headers: {
-            'x-auth-token': localStorage.getItem('token')
-          }
+            'x-auth-token': localStorage.getItem('token'),
+          },
         });
         updatedExpenses = [...expenses, response.data];
       }
       setExpenses(updatedExpenses);
-      setExpenseToEdit(null); // Clear edit mode after save
+      setExpenseToEdit(null);
     } catch (error) {
-      console.error('Error saving expense!', error);
+      console.error('Error saving expense:', error);
     }
   };
 
@@ -70,12 +102,12 @@ const ExpenseManager = () => {
     try {
       await axios.delete(`/api/expenses/${id}`, {
         headers: {
-          'x-auth-token': localStorage.getItem('token')
-        }
+          'x-auth-token': localStorage.getItem('token'),
+        },
       });
-      setExpenses(expenses.filter(expense => expense._id !== id));
+      setExpenses(expenses.filter((exp) => exp._id !== id));
     } catch (error) {
-      console.error('Error deleting expense!', error);
+      console.error('Error deleting expense:', error);
     }
   };
 
@@ -87,6 +119,7 @@ const ExpenseManager = () => {
     <div>
       <Navbar />
       <div style={containerStyle}>
+        {alertMessage && <div style={{ color: 'red' }}>{alertMessage}</div>}
         <ExpenseForm onSave={handleSave} expenseToEdit={expenseToEdit} clearEdit={clearEdit} />
         <ExpenseTable onEdit={handleEdit} onDelete={handleDelete} expenses={expenses} />
       </div>

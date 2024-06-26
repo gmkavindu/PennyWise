@@ -1,75 +1,102 @@
+// server/controllers/expenseController.js
+
 const Expense = require('../models/Expense');
-const mongoose = require('mongoose');
+const Budget = require('../models/Budget');
+
+// Get all expenses for a user
+exports.getExpenses = async (req, res) => {
+    try {
+        const expenses = await Expense.find({ user: req.user.id });
+        res.json(expenses);
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error', error: err.message });
+    }
+};
 
 // Add a new expense
 exports.addExpense = async (req, res) => {
-  try {
     const { amount, category, date, description } = req.body;
-    const newExpense = new Expense({
-      amount,
-      category,
-      date,
-      description,
-      user: req.user.id,  // Assuming req.user contains the authenticated user's ID
-    });
-    const expense = await newExpense.save();
-    res.json(expense);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
+
+    try {
+        // Find the budget for the given category
+        const budget = await Budget.findOne({ category, user: req.user.id });
+
+        if (!budget) {
+            return res.status(400).json({ message: `No budget found for category ${category}` });
+        }
+
+        // Calculate the total expenses for the category
+        const totalExpenseForCategory = await Expense.aggregate([
+            { $match: { category, user: req.user.id } },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
+
+        const currentTotal = totalExpenseForCategory.length ? totalExpenseForCategory[0].total : 0;
+        const newTotal = currentTotal + amount;
+
+        if (newTotal > budget.limit) {
+            return res.status(400).json({ message: `Adding this expense exceeds the budget limit for ${category}` });
+        }
+
+        const newExpense = new Expense({
+            amount,
+            category,
+            date,
+            description,
+            user: req.user.id
+        });
+
+        const expense = await newExpense.save();
+        res.json(expense);
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error', error: err.message });
+    }
 };
 
-// Get all expenses for the authenticated user
-exports.getExpenses = async (req, res) => {
-  try {
-    const expenses = await Expense.find({ user: req.user.id });  // Filter by authenticated user's ID
-    res.json(expenses);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-};
-
-// Update an expense by ID
+// Update an existing expense
 exports.updateExpense = async (req, res) => {
-  const { amount, category, date, description } = req.body;
-  const updatedExpense = { amount, category, date, description };
+    const { amount, category, date, description } = req.body;
 
-  try {
-    let expense = await Expense.findById(req.params.id);
-    if (!expense) return res.status(404).json({ msg: 'Expense not found' });
+    try {
+        let expense = await Expense.findById(req.params.id);
 
-    if (expense.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
+        if (!expense) return res.status(404).json({ message: 'Expense not found' });
+
+        // Check user
+        if (expense.user.toString() !== req.user.id) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        // Update the expense
+        expense = await Expense.findByIdAndUpdate(
+            req.params.id,
+            { $set: { amount, category, date, description } },
+            { new: true }
+        );
+
+        res.json(expense);
+    } catch (err) {
+        res.status(500).json({ message: 'Server Error', error: err.message });
     }
-
-    expense = await Expense.findByIdAndUpdate(req.params.id, { $set: updatedExpense }, { new: true });
-
-    res.json(expense);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
 };
 
-// Delete an expense by ID
+// Delete an expense
 exports.deleteExpense = async (req, res) => {
-  try {
-    const expenseId = req.params.id;
-    if (!mongoose.Types.ObjectId.isValid(expenseId)) {
-      return res.status(400).json({ msg: 'Invalid expense ID' });
+    try {
+      let expense = await Expense.findById(req.params.id);
+  
+      if (!expense) return res.status(404).json({ msg: 'Expense not found' });
+  
+      // Ensure user owns expense
+      if (expense.user.toString() !== req.user.id) {
+        return res.status(401).json({ msg: 'User not authorized' });
+      }
+  
+      await Expense.findByIdAndDelete(req.params.id);
+  
+      res.json({ msg: 'Expense removed' });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
-
-    let expense = await Expense.findOneAndDelete({ _id: expenseId, user: req.user.id });
-
-    if (!expense) {
-      return res.status(404).json({ msg: 'Expense not found' });
-    }
-
-    res.json({ msg: 'Expense removed' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-};
+  };

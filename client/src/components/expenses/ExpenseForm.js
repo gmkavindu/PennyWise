@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const formStyle = {
   padding: '20px',
@@ -30,6 +31,25 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
+  const [budgets, setBudgets] = useState([]);
+  const [alertMessage, setAlertMessage] = useState('');
+
+  useEffect(() => {
+    const fetchBudgets = async () => {
+      try {
+        const response = await axios.get('/api/budgets', {
+          headers: {
+            'x-auth-token': localStorage.getItem('token'),
+          },
+        });
+        setBudgets(response.data);
+      } catch (error) {
+        console.error('Error fetching budgets:', error);
+      }
+    };
+
+    fetchBudgets();
+  }, []);
 
   useEffect(() => {
     if (expenseToEdit) {
@@ -45,8 +65,25 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
     }
   }, [expenseToEdit]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setAlertMessage('');
+
+    const budgetForCategory = budgets.find((b) => b.category === category);
+    if (budgetForCategory) {
+      const totalExpenseForCategory = (await axios.get(`/api/expenses?category=${category}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+        },
+      })).data.reduce((total, exp) => total + exp.amount, 0);
+
+      const newTotal = totalExpenseForCategory + parseFloat(amount);
+      if (newTotal > budgetForCategory.limit) {
+        setAlertMessage(`Adding this expense exceeds the budget limit for ${category}`);
+        return;
+      }
+    }
+
     const expense = { amount, category, date, description };
     onSave(expense);
     clearEdit();
@@ -54,6 +91,7 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
+      {alertMessage && <div style={{ color: 'red' }}>{alertMessage}</div>}
       <div>
         <label>Amount:</label>
         <input
@@ -73,9 +111,11 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
           style={inputStyle}
         >
           <option value="">Select Category</option>
-          <option value="Food">Food</option>
-          <option value="Transport">Transport</option>
-          <option value="Utilities">Utilities</option>
+          {budgets.map((budget) => (
+            <option key={budget._id} value={budget.category}>
+              {budget.category}
+            </option>
+          ))}
         </select>
       </div>
       <div>
