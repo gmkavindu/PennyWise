@@ -36,6 +36,7 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
   const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
+    console.log('ExpenseForm component mounted or updated');
     const fetchBudgets = async () => {
       try {
         const response = await axios.get('/api/budgets', {
@@ -53,6 +54,12 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
   }, []);
 
   useEffect(() => {
+    if (category) {
+      fetchExpenses(category);
+    }
+  }, [category]);
+
+  useEffect(() => {
     if (expenseToEdit) {
       setAmount(expenseToEdit.amount.toString());
       setCategory(expenseToEdit.category);
@@ -63,12 +70,6 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
       resetForm();
     }
   }, [expenseToEdit]);
-
-  useEffect(() => {
-    if (category) {
-      fetchExpenses(category);
-    }
-  }, [category]);
 
   const fetchExpenses = async (category) => {
     try {
@@ -84,29 +85,50 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
   };
 
   const calculateTotalExpenses = (category, excludeId = null) => {
+    console.log('Calculating total expenses for category:', category);
     return expenses
       .filter(exp => exp.category === category && exp._id !== excludeId)
-      .reduce((total, exp) => total + exp.amount, 0);
+      .reduce((total, exp) => {
+        console.log(`Adding expense: ${exp.amount}, ID: ${exp._id}`);
+        return total + exp.amount;
+      }, 0);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setAlertMessage('');
+
+    console.log('Submitting form...');
+    console.log('expenseToEdit:', expenseToEdit);
+    console.log('category:', category);
+    console.log('amount:', amount);
 
     const budgetForCategory = budgets.find((b) => b.category === category);
-    const totalExpenses = calculateTotalExpenses(category, expenseToEdit ? expenseToEdit._id : null);
     const newAmount = parseFloat(amount);
-    const newTotal = totalExpenses + newAmount;
 
-    // If editing, calculate total by subtracting old amount and adding new amount
+    console.log('budgets:', budgets);
+    console.log('budgetForCategory:', budgetForCategory);
+
+    let newTotal;
+
     if (expenseToEdit) {
-      const editedTotal = totalExpenses - expenseToEdit.amount + newAmount;
-      if (budgetForCategory && editedTotal > budgetForCategory.limit) {
-        setAlertMessage(`Editing this expense exceeds the budget limit for ${category}`);
-        return;
-      }
-    } else if (budgetForCategory && newTotal > budgetForCategory.limit) {
-      setAlertMessage(`Adding this expense exceeds the budget limit for ${category}`);
+      // Editing existing expense
+      const totalExpenses = calculateTotalExpenses(category, expenseToEdit._id);
+      console.log('Total expenses for category (excluding current expense):', totalExpenses);
+      newTotal = totalExpenses + newAmount;
+    } else {
+      // Adding new expense
+      const totalExpenses = calculateTotalExpenses(category) + newAmount;
+      console.log('Total expenses for category:', totalExpenses);
+      newTotal = totalExpenses;
+    }
+
+    console.log('New total:', newTotal);
+    console.log('Budget limit:', budgetForCategory ? budgetForCategory.limit : 'Budget not found');
+
+    if (budgetForCategory && newTotal > budgetForCategory.limit) {
+      const action = expenseToEdit ? 'Editing' : 'Adding';
+      console.log(`${action} this expense exceeds the budget limit for ${category}`);
+      setAlertMessage(`${action} this expense exceeds the budget limit for ${category}`);
       return;
     }
 
@@ -117,6 +139,8 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
       description,
       _id: expenseToEdit ? expenseToEdit._id : undefined,
     };
+
+    console.log('Saving expense:', expense);
 
     onSave(expense);
     clearEdit();

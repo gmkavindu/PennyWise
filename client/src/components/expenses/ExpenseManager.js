@@ -16,113 +16,78 @@ const containerStyle = {
 
 const ExpenseManager = () => {
   const [expenses, setExpenses] = useState([]);
-  const [budgets, setBudgets] = useState([]);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
-  const [alertMessage, setAlertMessage] = useState('');
+
+  const fetchExpenses = async () => {
+    try {
+      const response = await axios.get('/api/expenses', {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+        },
+      });
+      setExpenses(response.data);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        const response = await axios.get('/api/expenses', {
-          headers: {
-            'x-auth-token': localStorage.getItem('token'),
-          },
-        });
-        setExpenses(response.data);
-      } catch (error) {
-        console.error('Error fetching expenses:', error);
-      }
-    };
-
-    const fetchBudgets = async () => {
-      try {
-        const response = await axios.get('/api/budgets', {
-          headers: {
-            'x-auth-token': localStorage.getItem('token'),
-          },
-        });
-        setBudgets(response.data);
-      } catch (error) {
-        console.error('Error fetching budgets:', error);
-      }
-    };
-
     fetchExpenses();
-    fetchBudgets();
   }, []);
 
-  const handleSave = async (expense) => {
-    setAlertMessage('');
-
+  const handleSaveExpense = async (expense) => {
     try {
-      const budgetForCategory = budgets.find((b) => b.category === expense.category);
-      if (budgetForCategory) {
-        const totalExpenseForCategory = expenses.reduce((total, exp) => {
-          if (exp.category === expense.category) {
-            return total + exp.amount;
-          }
-          return total;
-        }, 0);
-
-        const newTotal = totalExpenseForCategory + parseFloat(expense.amount);
-        if (newTotal > budgetForCategory.limit) {
-          setAlertMessage(`Adding this expense exceeds the budget limit for ${expense.category}`);
-          return;
-        }
-      }
-
-      let updatedExpenses;
-      if (expenseToEdit && expenseToEdit._id) {
-        const response = await axios.put(`/api/expenses/${expenseToEdit._id}`, expense, {
+      if (expense._id) {
+        // Update existing expense
+        await axios.put(`/api/expenses/${expense._id}`, expense, {
           headers: {
             'x-auth-token': localStorage.getItem('token'),
           },
         });
-        updatedExpenses = expenses.map((exp) => (exp._id === expenseToEdit._id ? response.data : exp));
       } else {
-        const response = await axios.post('/api/expenses', expense, {
+        // Add new expense
+        await axios.post('/api/expenses', expense, {
           headers: {
             'x-auth-token': localStorage.getItem('token'),
           },
         });
-        updatedExpenses = [...expenses, response.data];
       }
-      setExpenses(updatedExpenses);
-      setExpenseToEdit(null);
+      fetchExpenses();
     } catch (error) {
       console.error('Error saving expense:', error);
     }
   };
 
-  const handleEdit = (expense) => {
+  const handleEditExpense = (expense) => {
     setExpenseToEdit(expense);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`/api/expenses/${id}`, {
-        headers: {
-          'x-auth-token': localStorage.getItem('token'),
-        },
-      });
-      setExpenses(expenses.filter((exp) => exp._id !== id));
-    } catch (error) {
-      console.error('Error deleting expense:', error);
-    }
   };
 
   const clearEdit = () => {
     setExpenseToEdit(null);
   };
 
+  const handleDeleteExpense = async (id) => {
+    try {
+      await axios.delete(`/api/expenses/${id}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+        },
+      });
+      fetchExpenses();
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+    }
+  };
+
   return (
-    <div>
+    <div style={containerStyle}>
       <Navbar />
-      <div style={containerStyle}>
-        {alertMessage && <div style={{ color: 'red' }}>{alertMessage}</div>}
-        <ExpenseForm onSave={handleSave} expenseToEdit={expenseToEdit} clearEdit={clearEdit} />
-        <ExpenseTable onEdit={handleEdit} onDelete={handleDelete} expenses={expenses} />
-      </div>
+      <ExpenseForm onSave={handleSaveExpense} expenseToEdit={expenseToEdit} clearEdit={clearEdit} />
+      <ExpenseTable
+        expenses={expenses}
+        onEdit={handleEditExpense}
+        onDelete={handleDeleteExpense}
+      />
     </div>
   );
 };
