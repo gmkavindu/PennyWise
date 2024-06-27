@@ -24,37 +24,48 @@ const tdStyle = {
 };
 
 const ExpenseTable = ({ onEdit, onDelete, expenses }) => {
+  // State hooks for filtering and searching
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterDate, setFilterDate] = useState('');
 
-  const filteredExpenses = expenses.filter(expense => {
-    return (
-      (filterCategory === '' || expense.category === filterCategory) &&
-      (filterDate === '' || new Date(expense.date).toISOString().split('T')[0] === filterDate) &&
-      (searchTerm === '' || expense.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  });
+  // Extracting unique categories from expenses
+  const categories = [...new Set(expenses.map(expense => expense.category))];
+
+  // Filtering expenses based on search term, category, and date
+  const filteredExpenses = expenses
+    .filter(expense => {
+      return (
+        (filterCategory === '' || expense.category === filterCategory) &&
+        (filterDate === '' || new Date(expense.date).toISOString().split('T')[0] === filterDate) &&
+        (searchTerm === '' || expense.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date in descending order
 
   return (
     <div style={containerStyle}>
+      {/* Search input */}
       <input
         type="text"
         placeholder="Search by description"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+      {/* Category filter dropdown */}
       <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
         <option value="">All Categories</option>
-        <option value="Food">Food</option>
-        <option value="Transport">Transport</option>
-        <option value="Utilities">Utilities</option>
+        {categories.map(category => (
+          <option key={category} value={category}>{category}</option>
+        ))}
       </select>
+      {/* Date filter input */}
       <input
         type="date"
         value={filterDate}
         onChange={(e) => setFilterDate(e.target.value)}
       />
+      {/* Expense table */}
       <table style={tableStyle}>
         <thead>
           <tr>
@@ -66,6 +77,7 @@ const ExpenseTable = ({ onEdit, onDelete, expenses }) => {
           </tr>
         </thead>
         <tbody>
+          {/* Mapping filtered expenses to table rows */}
           {filteredExpenses.map(expense => (
             <tr key={expense._id}>
               <td style={tdStyle}>{expense.amount}</td>
@@ -73,6 +85,7 @@ const ExpenseTable = ({ onEdit, onDelete, expenses }) => {
               <td style={tdStyle}>{new Date(expense.date).toLocaleDateString()}</td>
               <td style={tdStyle}>{expense.description}</td>
               <td style={tdStyle}>
+                {/* Edit and delete buttons for each expense */}
                 <button onClick={() => onEdit(expense)}>Edit</button>
                 <button onClick={() => onDelete(expense._id)}>Delete</button>
               </td>

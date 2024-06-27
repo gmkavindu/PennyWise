@@ -25,7 +25,8 @@ const ExpenseManager = () => {
           'x-auth-token': localStorage.getItem('token'),
         },
       });
-      setExpenses(response.data);
+      const sortedExpenses = response.data.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setExpenses(sortedExpenses);
     } catch (error) {
       console.error('Error fetching expenses:', error);
     }
@@ -80,14 +81,13 @@ const ExpenseManager = () => {
   };
 
   return (
-    <div style={containerStyle}>
+    <div>
       <Navbar />
-      <ExpenseForm onSave={handleSaveExpense} expenseToEdit={expenseToEdit} clearEdit={clearEdit} />
-      <ExpenseTable
-        expenses={expenses}
-        onEdit={handleEditExpense}
-        onDelete={handleDeleteExpense}
-      />
+      <div style={containerStyle}>
+        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Expense Manager</h2>
+        <ExpenseForm onSave={handleSaveExpense} expenseToEdit={expenseToEdit} clearEdit={clearEdit} />
+        <ExpenseTable expenses={expenses} onEdit={handleEditExpense} onDelete={handleDeleteExpense} />
+      </div>
     </div>
   );
 };
