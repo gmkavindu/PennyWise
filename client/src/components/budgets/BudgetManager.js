@@ -20,6 +20,7 @@ const BudgetManager = () => {
   const [budgetToEdit, setBudgetToEdit] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [decreaseMessage, setDecreaseMessage] = useState('');
+  const [deleteMessage, setDeleteMessage] = useState('');
 
   useEffect(() => {
     const fetchBudgetsData = async () => {
@@ -61,7 +62,7 @@ const BudgetManager = () => {
       const totalExpenseForCategory = calculateTotalExpensesForCategory(budget.category);
 
       if (budgetToEdit && budgetToEdit.limit < totalExpenseForCategory) {
-        const message = `Cannot decrease budget for ${budgetToEdit.category} because existing expenses exceed the new limit`;
+        const message = `Cannot decrease budget for ${budgetToEdit.category} because existing expenses exceed the new limit.`;
         setDecreaseMessage(message);
         return;
       } else {
@@ -87,6 +88,13 @@ const BudgetManager = () => {
 
   const handleDeleteBudget = async (id) => {
     try {
+      const associatedExpenses = expenses.filter((exp) => exp.category === budgets.find((b) => b._id === id)?.category);
+
+      if (associatedExpenses.length > 0) {
+        setDeleteMessage(`Cannot delete budget because there are existing expenses associated with it.`);
+        return;
+      }
+
       await deleteBudget(id);
       setBudgets(budgets.filter((b) => b._id !== id));
     } catch (error) {
@@ -102,7 +110,15 @@ const BudgetManager = () => {
         {decreaseMessage && (
           <div style={{ marginBottom: '10px', color: 'red', fontWeight: 'bold' }}>{decreaseMessage}</div>
         )}
-        <BudgetForm onSave={handleSaveBudget} budgetToEdit={budgetToEdit} clearEdit={() => setBudgetToEdit(null)} />
+        {deleteMessage && (
+          <div style={{ marginBottom: '10px', color: 'red', fontWeight: 'bold' }}>{deleteMessage}</div>
+        )}
+        <BudgetForm
+          onSave={handleSaveBudget}
+          budgetToEdit={budgetToEdit}
+          clearEdit={() => setBudgetToEdit(null)}
+          totalExpensesForCategory={calculateTotalExpensesForCategory(budgetToEdit?.category || '')}
+        />
         <BudgetList budgets={budgets} onEdit={handleEditBudget} onDelete={handleDeleteBudget} />
         <BudgetChart budgets={budgets} expenses={expenses} />
       </div>

@@ -1,9 +1,5 @@
-// src/components/budgets/BudgetChart.js
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto'; // Import Chart.js without LinearScale
-
-// eslint-disable-next-line no-unused-vars
-import { LinearScale } from 'chart.js';
 
 const BudgetChart = ({ budgets, expenses }) => {
   const chartRef = useRef(null);
@@ -29,27 +25,51 @@ const BudgetChart = ({ budgets, expenses }) => {
           datasets: [
             {
               label: 'Budget Limit',
-              backgroundColor: 'rgba(54, 162, 235, 0.5)',
+              backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue color for budget limit
               borderColor: 'rgba(54, 162, 235, 1)',
               borderWidth: 1,
               data: budgetLimits,
+              order: 1, // Ensure budget bars are behind expense bars
             },
             {
               label: 'Total Expenses',
-              backgroundColor: 'rgba(255, 99, 132, 0.5)',
-              borderColor: 'rgba(255, 99, 132, 1)',
+              backgroundColor: 'rgba(180, 0, 0, 0.6)', // Dark red color for total expenses
+              borderColor: 'rgba(180, 0, 0, 1)',
               borderWidth: 1,
               data: totalExpenses,
+              order: 2, // Ensure expense bars are in front of budget bars
             },
           ],
         },
         options: {
+          indexAxis: 'y',
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function (tooltipItem) {
+                  return tooltipItem.dataset.label + ': $' + tooltipItem.raw.toFixed(2);
+                },
+              },
+            },
+          },
           scales: {
+            x: {
+              display: false, // Hide x-axis labels and grid lines
+            },
             y: {
-              beginAtZero: true,
+              stacked: true,
               title: {
                 display: true,
-                text: 'Amount',
+                text: 'Category',
+              },
+              ticks: {
+                font: {
+                  size: 12,
+                },
               },
             },
           },
@@ -58,7 +78,7 @@ const BudgetChart = ({ budgets, expenses }) => {
     }
   }, [budgets, expenses]);
 
-  return <canvas ref={chartRef} width="400" height="200" />;
+  return <canvas ref={chartRef} />;
 };
 
 export default BudgetChart;

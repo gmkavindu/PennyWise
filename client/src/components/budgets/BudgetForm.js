@@ -22,9 +22,10 @@ const buttonStyle = {
   cursor: 'pointer',
 };
 
-const BudgetForm = ({ onSave, budgetToEdit, clearEdit }) => {
+const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory }) => {
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
     if (budgetToEdit) {
@@ -38,13 +39,21 @@ const BudgetForm = ({ onSave, budgetToEdit, clearEdit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ category, limit: parseFloat(limit) });
+
+    const newLimit = parseFloat(limit);
+    if (budgetToEdit && newLimit < totalExpensesForCategory) {
+      setAlertMessage(`Cannot decrease budget for ${category} because existing expenses exceed the new limit.`);
+      return;
+    }
+
+    onSave({ category, limit: newLimit });
     clearForm();
   };
 
   const clearForm = () => {
     setCategory('');
     setLimit('');
+    setAlertMessage('');
     if (clearEdit) {
       clearEdit();
     }
@@ -52,6 +61,7 @@ const BudgetForm = ({ onSave, budgetToEdit, clearEdit }) => {
 
   return (
     <form style={formStyle} onSubmit={handleSubmit}>
+      {alertMessage && <div style={{ color: 'red' }}>{alertMessage}</div>}
       <input
         style={inputStyle}
         type="text"
