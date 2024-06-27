@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import BudgetForm from './BudgetForm';
 import BudgetList from './BudgetList';
 import Navbar from '../Navbar';
-import ExpenseForm from '../expenses/ExpenseForm';
-import { fetchBudgets, addBudget, deleteBudget, updateBudget } from '../../services/api';
+import BudgetChart from './BudgetChart';
+import { fetchBudgets, addBudget, deleteBudget, updateBudget, fetchExpenses } from '../../services/api';
 
 const containerStyle = {
   maxWidth: '800px',
@@ -20,8 +19,7 @@ const BudgetManager = () => {
   const [budgets, setBudgets] = useState([]);
   const [budgetToEdit, setBudgetToEdit] = useState(null);
   const [expenses, setExpenses] = useState([]);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [decreaseMessage, setDecreaseMessage] = useState('');
 
   useEffect(() => {
     const fetchBudgetsData = async () => {
@@ -33,25 +31,43 @@ const BudgetManager = () => {
       }
     };
 
-    const fetchExpenses = async () => {
+    fetchBudgetsData();
+  }, []);
+
+  useEffect(() => {
+    const fetchExpensesData = async () => {
       try {
-        const response = await axios.get('/api/expenses', {
-          headers: {
-            'x-auth-token': localStorage.getItem('token'),
-          },
-        });
-        setExpenses(response.data);
+        const data = await fetchExpenses();
+        setExpenses(data);
       } catch (error) {
         console.error('Error fetching expenses:', error);
       }
     };
 
-    fetchBudgetsData();
-    fetchExpenses();
+    fetchExpensesData();
   }, []);
+
+  const calculateTotalExpensesForCategory = (category) => {
+    return expenses.reduce((total, exp) => {
+      if (exp.category === category) {
+        return total + exp.amount;
+      }
+      return total;
+    }, 0);
+  };
 
   const handleSaveBudget = async (budget) => {
     try {
+      const totalExpenseForCategory = calculateTotalExpensesForCategory(budget.category);
+
+      if (budgetToEdit && budgetToEdit.limit < totalExpenseForCategory) {
+        const message = `Cannot decrease budget for ${budgetToEdit.category} because existing expenses exceed the new limit`;
+        setDecreaseMessage(message);
+        return;
+      } else {
+        setDecreaseMessage('');
+      }
+
       if (budgetToEdit) {
         const updatedBudget = await updateBudget(budgetToEdit._id, budget);
         setBudgets(budgets.map((b) => (b._id === budgetToEdit._id ? updatedBudget : b)));
@@ -78,62 +94,17 @@ const BudgetManager = () => {
     }
   };
 
-  const handleSaveExpense = async (expense) => {
-    setAlertMessage('');
-    try {
-      const budgetForCategory = budgets.find((b) => b.category === expense.category);
-
-      if (!budgetForCategory) {
-        console.error(`No budget found for category ${expense.category}`);
-        setAlertMessage(`No budget found for category ${expense.category}`);
-        return;
-      }
-
-      const totalExpenseForCategory = expenses.reduce((total, exp) => {
-        if (exp.category === expense.category) {
-          return total + exp.amount;
-        }
-        return total;
-      }, 0);
-
-      const newTotal = totalExpenseForCategory + parseFloat(expense.amount);
-      if (newTotal > budgetForCategory.limit) {
-        console.error(`Adding this expense exceeds the budget limit for ${expense.category}`);
-        setAlertMessage(`Adding this expense exceeds the budget limit for ${expense.category}`);
-        return;
-      }
-
-      const response = await axios.post('/api/expenses', expense, {
-        headers: {
-          'x-auth-token': localStorage.getItem('token'),
-        },
-      });
-
-      setExpenses([...expenses, response.data]);
-    } catch (error) {
-      console.error('Error saving expense:', error);
-    }
-  };
-
-  const toggleExpenseForm = () => {
-    setShowExpenseForm(!showExpenseForm);
-  };
-
   return (
     <div>
       <Navbar />
       <div style={containerStyle}>
         <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Budget Manager</h2>
-        {alertMessage && <div style={{ color: 'red', textAlign: 'center' }}>{alertMessage}</div>}
+        {decreaseMessage && (
+          <div style={{ marginBottom: '10px', color: 'red', fontWeight: 'bold' }}>{decreaseMessage}</div>
+        )}
         <BudgetForm onSave={handleSaveBudget} budgetToEdit={budgetToEdit} clearEdit={() => setBudgetToEdit(null)} />
         <BudgetList budgets={budgets} onEdit={handleEditBudget} onDelete={handleDeleteBudget} />
-      </div>
-      
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <button onClick={toggleExpenseForm}>
-          {showExpenseForm ? 'Hide Expense Form' : 'Show Expense Form'}
-        </button>
-        {showExpenseForm && <ExpenseForm onSave={handleSaveExpense} />}
+        <BudgetChart budgets={budgets} expenses={expenses} />
       </div>
     </div>
   );

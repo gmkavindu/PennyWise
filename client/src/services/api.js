@@ -2,6 +2,15 @@ import axios from 'axios';
 
 const API_URL = '/api';
 
+export const fetchExpenses = async () => {
+  const response = await axios.get(`${API_URL}/expenses`, {
+    headers: {
+      'x-auth-token': localStorage.getItem('token'),
+    },
+  });
+  return response.data;
+};
+
 export const fetchBudgets = async () => {
   const response = await axios.get(`${API_URL}/budgets`, {
     headers: {

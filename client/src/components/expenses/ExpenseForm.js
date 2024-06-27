@@ -32,6 +32,7 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
   const [budgets, setBudgets] = useState([]);
+  const [expenses, setExpenses] = useState([]);
   const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
@@ -53,40 +54,82 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
 
   useEffect(() => {
     if (expenseToEdit) {
-      setAmount(expenseToEdit.amount);
+      setAmount(expenseToEdit.amount.toString());
       setCategory(expenseToEdit.category);
       setDate(new Date(expenseToEdit.date).toISOString().split('T')[0]);
       setDescription(expenseToEdit.description);
+      fetchExpenses(expenseToEdit.category);
     } else {
-      setAmount('');
-      setCategory('');
-      setDate('');
-      setDescription('');
+      resetForm();
     }
   }, [expenseToEdit]);
+
+  useEffect(() => {
+    if (category) {
+      fetchExpenses(category);
+    }
+  }, [category]);
+
+  const fetchExpenses = async (category) => {
+    try {
+      const response = await axios.get(`/api/expenses?category=${category}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+        },
+      });
+      setExpenses(response.data);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    }
+  };
+
+  const calculateTotalExpenses = (category, excludeId = null) => {
+    return expenses
+      .filter(exp => exp.category === category && exp._id !== excludeId)
+      .reduce((total, exp) => total + exp.amount, 0);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAlertMessage('');
 
     const budgetForCategory = budgets.find((b) => b.category === category);
-    if (budgetForCategory) {
-      const totalExpenseForCategory = (await axios.get(`/api/expenses?category=${category}`, {
-        headers: {
-          'x-auth-token': localStorage.getItem('token'),
-        },
-      })).data.reduce((total, exp) => total + exp.amount, 0);
+    const totalExpenses = calculateTotalExpenses(category, expenseToEdit ? expenseToEdit._id : null);
+    const newAmount = parseFloat(amount);
+    const newTotal = totalExpenses + newAmount;
 
-      const newTotal = totalExpenseForCategory + parseFloat(amount);
-      if (newTotal > budgetForCategory.limit) {
-        setAlertMessage(`Adding this expense exceeds the budget limit for ${category}`);
+    // If editing, calculate total by subtracting old amount and adding new amount
+    if (expenseToEdit) {
+      const editedTotal = totalExpenses - expenseToEdit.amount + newAmount;
+      if (budgetForCategory && editedTotal > budgetForCategory.limit) {
+        setAlertMessage(`Editing this expense exceeds the budget limit for ${category}`);
         return;
       }
+    } else if (budgetForCategory && newTotal > budgetForCategory.limit) {
+      setAlertMessage(`Adding this expense exceeds the budget limit for ${category}`);
+      return;
     }
 
-    const expense = { amount, category, date, description };
+    const expense = {
+      amount: newAmount,
+      category,
+      date,
+      description,
+      _id: expenseToEdit ? expenseToEdit._id : undefined,
+    };
+
     onSave(expense);
     clearEdit();
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setAmount('');
+    setCategory('');
+    setDate('');
+    setDescription('');
+    setExpenses([]);
+    setAlertMessage('');
   };
 
   return (
