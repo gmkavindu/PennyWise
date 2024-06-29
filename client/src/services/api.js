@@ -1,3 +1,5 @@
+// client/src/services/api.js
+
 import axios from 'axios';
 
 const API_URL = '/api';
@@ -45,4 +47,16 @@ export const deleteBudget = async (id) => {
     },
   });
   return response.data;
+};
+
+export const fetchFinancialTips = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/financial-tips`, {
+      headers: { 'x-auth-token': localStorage.getItem('token') },
+    });
+    return response.data.tips; // Assuming backend sends { tips: 'Financial tip message' }
+  } catch (error) {
+    console.error('Error fetching financial tips:', error);
+    throw error;
+  }
 };

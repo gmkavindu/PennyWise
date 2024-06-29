@@ -8,6 +8,7 @@ import Profile from './components/Profile';
 import ExpenseManager from './components/expenses/ExpenseManager';
 import BudgetManager from './components/budgets/BudgetManager'; // Import BudgetManager
 import VisualizationDashboard from './components/visualization/VisualizationDashboard'; // Import VisualizationDashboard
+import FinancialTips from './components/FinancialTips'; // Import FinancialTips
 import './App.css';
 import { AuthProvider, useAuth } from './authContext'; // Import AuthProvider and useAuth hook from authContext
 
@@ -52,6 +53,7 @@ function App() {
           <Route path="/expenses" element={<ProtectedRoute><ExpenseManager /></ProtectedRoute>} />
           <Route path="/budgets" element={<ProtectedRoute><BudgetManager /></ProtectedRoute>} /> {/* New Budget route */}
           <Route path="/visualization" element={<ProtectedRoute><VisualizationDashboard /></ProtectedRoute>} /> {/* New Visualization route */}
+          <Route path="/financial-tips" element={<ProtectedRoute><FinancialTips /></ProtectedRoute>} /> {/* New Financial Tips route */}
         </Routes>
       </Router>
     </AuthProvider>
