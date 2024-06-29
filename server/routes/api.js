@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { addExpense, getExpenses, updateExpense, deleteExpense } = require('../controllers/expenseController');
 const { addBudget, getBudgets, updateBudget, deleteBudget } = require('../controllers/budgetController');
-const { getFinancialTips } = require('../controllers/tipsController'); // Import the new function
+const { getFinancialTips, reloadFinancialTips } = require('../controllers/tipsController'); // Correctly import functions
 
 const auth = require('../middleware/auth');
 
@@ -18,7 +18,8 @@ router.get('/budgets', auth, getBudgets);
 router.put('/budgets/:id', auth, updateBudget);
 router.delete('/budgets/:id', auth, deleteBudget);
 
-router.get('/financial-tips', auth, getFinancialTips);
-
+// Financial tips routes
+router.get('/financial-tips', auth, getFinancialTips); // Correct route definition
+router.post('/financial-tips/reload', auth, reloadFinancialTips); // Correct route definition
 
 module.exports = router;

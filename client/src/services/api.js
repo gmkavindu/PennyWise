@@ -1,5 +1,3 @@
-// client/src/services/api.js
-
 import axios from 'axios';
 
 const API_URL = '/api';
@@ -57,6 +55,17 @@ export const fetchFinancialTips = async () => {
     return response.data.tips; // Assuming backend sends { tips: 'Financial tip message' }
   } catch (error) {
     console.error('Error fetching financial tips:', error);
+    throw error;
+  }
+};
+
+export const sendReloadRequest = async () => {
+  try {
+    await axios.post(`${API_URL}/financial-tips/reload`, null, {
+      headers: { 'x-auth-token': localStorage.getItem('token') },
+    });
+  } catch (error) {
+    console.error('Error sending reload request:', error);
     throw error;
   }
 };

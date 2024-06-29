@@ -2,6 +2,8 @@
 
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
+const User = require('../models/User');
+const { generateFinancialTips } = require('../utils/tipsGenerator');
 
 // Get all expenses for a user
 exports.getExpenses = async (req, res) => {
@@ -47,6 +49,10 @@ exports.addExpense = async (req, res) => {
         });
 
         const expense = await newExpense.save();
+
+        // Update user's last expenses update timestamp
+        await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date().toISOString() });
+
         res.json(expense);
     } catch (err) {
         res.status(500).json({ message: 'Server Error', error: err.message });
@@ -74,6 +80,9 @@ exports.updateExpense = async (req, res) => {
             { new: true }
         );
 
+        // Update user's last expenses update timestamp
+        await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date().toISOString() });
+
         res.json(expense);
     } catch (err) {
         res.status(500).json({ message: 'Server Error', error: err.message });
@@ -93,10 +102,13 @@ exports.deleteExpense = async (req, res) => {
       }
   
       await Expense.findByIdAndDelete(req.params.id);
-  
+
+      // Update user's last expenses update timestamp
+      await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date().toISOString() });
+
       res.json({ msg: 'Expense removed' });
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Server Error');
     }
-  };
+};

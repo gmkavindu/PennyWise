@@ -18,6 +18,15 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  lastExpensesUpdate: {
+    type: Date,
+  },
+  lastGeneratedTips: {
+    type: [String], // Array of strings for the tips
+  },
+  tipsGeneratedAt: {
+    type: Date,
+  },
 });
 
 module.exports = mongoose.model('User', UserSchema);

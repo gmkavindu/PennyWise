@@ -1,39 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import { fetchFinancialTips } from '../services/api'; 
+import React, { useEffect, useState, useCallback } from 'react';
+import { fetchFinancialTips } from '../services/api'; // Assuming this fetches financial tips from an API
 import Navbar from './Navbar';
 
 const FinancialTips = () => {
   const [tips, setTips] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); // Initialize error state with an empty string
 
-  useEffect(() => {
-    const loadTips = async () => {
-      try {
-        const response = await fetchFinancialTips();
-        setTips(parseTips(response)); // Parse the response
-      } catch (error) {
-        setError('Failed to load financial tips');
-      } finally {
-        setLoading(false);
+  const loadTips = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetchFinancialTips();
+
+      if (Array.isArray(response) && response.length === 1 && typeof response[0] === 'string') {
+        setTips(parseTips(response[0]));
+      } else {
+        throw new Error('Invalid response format');
       }
-    };
 
-    loadTips();
+      setLoading(false);
+      setError(''); // Reset error state upon successful fetch
+    } catch (error) {
+      console.error('Failed to load financial tips:', error);
+      setError('Failed to load financial tips'); // Set error state only on error
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    loadTips();
+  }, [loadTips]);
+
   const parseTips = (response) => {
-    const lines = response.split('\n');
-    const formattedLines = lines.map((line) => {
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return { type: 'bold', text: line.replace(/\*\*/g, '') };
-      }
-      if (line.startsWith('- **') && line.endsWith('**')) {
-        return { type: 'semiBold', text: line.replace(/- \*\*/g, '').replace(/\*\*/g, '') };
-      }
-      return { type: 'normal', text: line };
-    });
-    return formattedLines;
+    const lines = response.split('\n').filter(line => line.trim() !== '');
+    const formattedTips = lines.map((line, index) => ({
+      text: line.replace(/[*-]/g, '').trim(), // Remove * and - characters
+      index
+    }));
+
+    return formattedTips;
   };
 
   const styles = {
@@ -65,58 +70,6 @@ const FinancialTips = () => {
       lineHeight: '1.6',
       textAlign: 'left',
     },
-    bold: {
-      fontWeight: 'bold',
-      fontSize: '20px',
-      marginBottom: '10px',
-    },
-    semiBold: {
-      fontWeight: '600',
-      marginBottom: '10px',
-    },
-    normal: {
-      marginBottom: '10px',
-    },
-  };
-
-  const getIcon = (title) => {
-    switch (title.toUpperCase()) {
-      case 'ANALYZING YOUR EXPENSES':
-        return '🔍';
-      case 'PRIORITIZE ESSENTIALS':
-        return '📋';
-      case 'BUDGET ALLOCATION':
-        return '💰';
-      case 'DISCOUNTS AND COUPONS':
-        return '💸';
-      case 'MEAL PLANNING':
-        return '🍽️';
-      case 'ENERGY EFFICIENCY':
-        return '🔌';
-      case 'ENTERTAINMENT CHOICES':
-        return '🎬';
-      case 'COMPARISON SHOPPING':
-        return '🛒';
-      case 'CREDIT CARD REWARDS':
-        return '💳';
-      case 'SAVINGS ACCOUNT':
-        return '🏦';
-      default:
-        return '💡';
-    }
-  };
-
-  const renderTips = () => {
-    return tips.map((tip, index) => {
-      const style = styles[tip.type];
-      const icon = tip.type === 'bold' ? getIcon(tip.text) : null;
-
-      return (
-        <div key={index} style={style}>
-          {icon} {tip.text}
-        </div>
-      );
-    });
   };
 
   return (
@@ -126,7 +79,13 @@ const FinancialTips = () => {
         <h1 style={styles.heading}>Personalized Financial Tips</h1>
         {loading && <p style={styles.loading}>Loading...</p>}
         {error && <p style={styles.error}>Error: {error}</p>}
-        {!loading && !error && <div style={styles.tips}>{renderTips()}</div>}
+        {!loading && tips.length > 0 && (
+          <div style={styles.tips}>
+            {tips.map(({ text, index }) => (
+              <p key={index}>{text}</p>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
