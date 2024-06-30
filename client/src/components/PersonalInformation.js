@@ -16,7 +16,7 @@ const PersonalInformation = () => {
           },
         });
         setName(response.data.name);
-        setProfilePictureUrl(response.data.profilePicture || ''); // Set an empty string if profilePicture is null
+        setProfilePictureUrl(response.data.profilePicture || '');
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       }
@@ -39,7 +39,7 @@ const PersonalInformation = () => {
         },
       });
       setMessage('Profile updated successfully');
-      setProfilePictureUrl(`${response.data.profilePicture}`); // Update profilePictureUrl after successful upload
+      setProfilePictureUrl(`${response.data.profilePicture}`);
     } catch (error) {
       setMessage('Failed to update profile');
     }
@@ -49,38 +49,93 @@ const PersonalInformation = () => {
     setProfilePicture(e.target.files[0]);
   };
 
+  const styles = {
+    container: {
+      maxWidth: '400px',
+      margin: '0 auto',
+      padding: '20px',
+      borderRadius: '8px',
+      backgroundColor: 'var(--background)',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    },
+    header: {
+      marginBottom: '20px',
+      textAlign: 'center',
+    },
+    message: {
+      marginBottom: '10px',
+      color: 'var(--message-color)',
+      textAlign: 'center',
+    },
+    formGroup: {
+      marginBottom: '20px',
+    },
+    label: {
+      display: 'block',
+      marginBottom: '5px',
+      fontWeight: 'bold',
+    },
+    input: {
+      width: '100%',
+      padding: '8px',
+      border: '1px solid var(--border-color)',
+      borderRadius: '4px',
+      backgroundColor: 'var(--input-background)',
+      color: 'var(--input-text)',
+    },
+    button: {
+      width: '100%',
+      padding: '10px',
+      border: 'none',
+      borderRadius: '4px',
+      backgroundColor: 'var(--button-background)',
+      color: 'var(--button-text)',
+      fontSize: '16px',
+      cursor: 'pointer',
+    },
+    buttonHover: {
+      backgroundColor: 'var(--button-background-hover)',
+    },
+    img: {
+      width: '150px',
+      height: '150px',
+    },
+  };
+
   return (
-    <div>
-      <h2>Personal Information</h2>
-      {message && <p>{message}</p>}
+    <div style={styles.container}>
+      <h2 style={styles.header}>Personal Information</h2>
+      {message && <p style={styles.message}>{message}</p>}
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Name:</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            style={styles.input}
           />
         </div>
-        <div>
-          <label>Profile Picture:</label>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Profile Picture:</label>
           <input
             type="file"
             onChange={handleFileChange}
+            style={styles.input}
           />
         </div>
         {profilePictureUrl && (
-          <div>
-            <label>Current Profile Picture:</label>
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Current Profile Picture:</label>
             <img
               src={profilePictureUrl.startsWith('http') ? profilePictureUrl : `http://localhost:5000${profilePictureUrl}`}
               alt="Profile"
-              style={{ width: '150px', height: '150px' }}
+              style={styles.img}
             />
           </div>
         )}
-        <button type="submit">Update</button>
+        <button type="submit" style={styles.button}>Update</button>
       </form>
     </div>
   );

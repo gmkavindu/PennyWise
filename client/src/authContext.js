@@ -1,36 +1,64 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Create a context for authentication
 const AuthContext = createContext();
 
-// AuthProvider component manages authentication state
-export function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Initialize isAuthenticated based on presence of token in localStorage
-    const token = localStorage.getItem('token');
-    return !!token; // Convert token presence to boolean
-  });
+export const AuthProvider = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('token'));
 
-  // Function to set isAuthenticated to true
-  const login = () => {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Fetch user's theme preference if a token is present in localStorage
+      const fetchUserProfile = async () => {
+        try {
+          const userResponse = await axios.get('/api/auth/profile', {
+            headers: {
+              'x-auth-token': token,
+            },
+          });
+          const userTheme = userResponse.data.theme;
+          localStorage.setItem('theme', userTheme);
+          document.documentElement.setAttribute('data-theme', userTheme);
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          // If the token is invalid, log the user out
+          logout();
+        }
+      };
+      fetchUserProfile();
+    }
+  }, []);
+
+  const login = async (token) => {
     setIsAuthenticated(true);
+    localStorage.setItem('token', token);
+
+    try {
+      const userResponse = await axios.get('/api/auth/profile', {
+        headers: {
+          'x-auth-token': token,
+        },
+      });
+      const userTheme = userResponse.data.theme;
+      localStorage.setItem('theme', userTheme);
+      document.documentElement.setAttribute('data-theme', userTheme);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
   };
 
-  // Function to set isAuthenticated to false and remove token from localStorage
   const logout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('token');
+    localStorage.removeItem('theme');
   };
 
   return (
-    // Provide AuthContext.Provider with isAuthenticated, login, and logout values
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children} {/* Render child components */}
+      {children}
     </AuthContext.Provider>
   );
-}
+};
 
-// Custom hook to consume authentication context
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);

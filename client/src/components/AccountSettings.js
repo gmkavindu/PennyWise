@@ -4,12 +4,12 @@ import axios from 'axios';
 const AccountSettings = () => {
   const [userData, setUserData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
 
   useEffect(() => {
-    // Fetch user data when component mounts
     const fetchUserData = async () => {
       try {
         const response = await axios.get('/api/auth/profile', {
@@ -19,10 +19,14 @@ const AccountSettings = () => {
         });
         setUserData({
           email: response.data.email,
-          password: ''  // For security reasons, avoid populating password field
+          password: '',
         });
+        setMessage('User data fetched successfully');
+        setMessageType('success');
       } catch (error) {
         console.error('Failed to fetch user data:', error);
+        setMessage('Failed to fetch user data');
+        setMessageType('error');
       }
     };
 
@@ -37,46 +41,99 @@ const AccountSettings = () => {
           'x-auth-token': localStorage.getItem('token'),
         },
       });
-      setMessage(response.data.message);
+      setMessage(response.data.message || 'Account updated successfully');
+      setMessageType('success');
     } catch (error) {
       console.error('Error updating account:', error);
       setMessage('Error updating account');
+      setMessageType('error');
     }
   };
 
   const handleChange = (e) => {
     setUserData({
       ...userData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
+  const styles = {
+    container: {
+      maxWidth: '400px',
+      margin: '0 auto',
+      padding: '20px',
+      borderRadius: '8px',
+      backgroundColor: 'var(--background)',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    },
+    header: {
+      marginBottom: '20px',
+      textAlign: 'center',
+    },
+    message: {
+      marginBottom: '10px',
+      padding: '10px',
+      borderRadius: '4px',
+      textAlign: 'center',
+      color: messageType === 'success' ? 'green' : 'red',
+      backgroundColor: messageType === 'success' ? '#e0ffe0' : '#ffe0e0',
+    },
+    formGroup: {
+      marginBottom: '20px',
+    },
+    label: {
+      display: 'block',
+      marginBottom: '5px',
+      fontWeight: 'bold',
+    },
+    input: {
+      width: '100%',
+      padding: '8px',
+      border: '1px solid var(--border-color)',
+      borderRadius: '4px',
+      backgroundColor: 'var(--input-background)',
+      color: 'var(--input-text)',
+    },
+    button: {
+      width: '100%',
+      padding: '10px',
+      border: 'none',
+      borderRadius: '4px',
+      backgroundColor: 'var(--button-background)',
+      color: 'var(--button-text)',
+      fontSize: '16px',
+      cursor: 'pointer',
+    },
+  };
+
   return (
-    <div>
-      <h2>Account Settings</h2>
-      {message && <p>{message}</p>}
+    <div style={styles.container}>
+      <h2 style={styles.header}>Account Settings</h2>
+      {message && <p style={styles.message}>{message}</p>}
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Email:</label>
           <input
             type="email"
             name="email"
             value={userData.email}
             onChange={handleChange}
             required
+            style={styles.input}
           />
         </div>
-        <div>
-          <label>Password:</label>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Password:</label>
           <input
             type="password"
             name="password"
             value={userData.password}
             onChange={handleChange}
             required
+            style={styles.input}
           />
         </div>
-        <button type="submit">Update</button>
+        <button type="submit" style={styles.button}>Update</button>
       </form>
     </div>
   );

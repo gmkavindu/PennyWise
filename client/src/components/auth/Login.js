@@ -5,7 +5,7 @@ import { useAuth } from '../../authContext';
 import './Auth.css';
 
 const Login = () => {
-  const { login } = useAuth(); // Access login function from useAuth hook
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -15,35 +15,22 @@ const Login = () => {
 
   const { email, password } = formData;
 
-  // Update form data when input changes
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Send POST request to login endpoint with formData
       const res = await axios.post('/api/auth/login', formData);
-      console.log(res.data);
 
-      // Assuming your backend responds with a token in res.data.token
       if (res.data.token) {
-        // Store the token in local storage
-        localStorage.setItem('token', res.data.token);
-
-        // Call login function from useAuth hook to update authentication state
-        login();
-
-        // Redirect to Dashboard upon successful login
+        login(res.data.token);
         navigate('/dashboard');
       } else {
-        // Handle the case where token is not received from the backend
         setError('Token not received');
       }
     } catch (err) {
-      // Handle errors from the server response
       setError(err.response.data.msg);
     }
   };
