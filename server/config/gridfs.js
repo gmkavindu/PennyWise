@@ -5,8 +5,9 @@ const multer = require('multer'); // For handling file uploads
 const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
-const router = express.Router(); // Use router as your router instance, not auth
-const authMiddleware = require('../middleware/auth'); // Rename auth to authMiddleware to avoid confusion
+const router = express.Router();
+require('dotenv').config();
+const auth = require('../middleware/auth'); // Assuming you have an authentication middleware
 
 // Multer storage configuration for profile pictures
 const storage = multer.diskStorage({
@@ -24,7 +25,7 @@ const upload = multer({
   limits: { fileSize: 1048576 }, // Limit file size to 1MB (adjust as necessary)
 });
 
-// @route   POST /api/auth/register
+// @route   POST api/auth/register
 // @desc    Register user
 // @access  Public
 router.post('/register', async (req, res) => {
@@ -67,7 +68,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// @route   POST /api/auth/login
+// @route   POST api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
 router.post('/login', async (req, res) => {
@@ -109,10 +110,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// @route   GET /api/auth/profile
+// @route   GET api/auth/profile
 // @desc    Get logged-in user's profile
 // @access  Private
-router.get('/profile', authMiddleware, async (req, res) => { // Use authMiddleware here
+router.get('/profile', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     res.json(user);
@@ -122,10 +123,10 @@ router.get('/profile', authMiddleware, async (req, res) => { // Use authMiddlewa
   }
 });
 
-// @route   PUT /api/auth/profile
+// @route   PUT api/auth/profile
 // @desc    Update logged-in user's profile (including profile picture)
 // @access  Private
-router.put('/profile', authMiddleware, upload.single('profilePicture'), async (req, res) => { // Use authMiddleware here
+router.put('/profile', auth, upload.single('profilePicture'), async (req, res) => {
   const { name, email, password } = req.body;
 
   // Build user object
@@ -138,7 +139,7 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
   }
   if (req.file) {
     // Save file path to user profilePicture field
-    userFields.profilePicture = `/uploads/profiles/${req.file.filename}`;
+    userFields.profilePicture = req.file.path;
   }
 
   try {
@@ -151,7 +152,7 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
     // Check if there's an existing profile picture and delete it if updating
     if (user.profilePicture && req.file) {
       // Delete old profile picture file
-      fs.unlinkSync(`./${user.profilePicture}`);
+      fs.unlinkSync(user.profilePicture);
     }
 
     user = await User.findByIdAndUpdate(

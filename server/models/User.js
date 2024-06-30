@@ -27,6 +27,13 @@ const UserSchema = new mongoose.Schema({
   tipsGeneratedAt: {
     type: Date,
   },
+  theme: {
+    type: String,
+    default: 'light',
+  },
+  profilePicture: {
+    type: String, // path to the profile picture
+  },
 });
 
 module.exports = mongoose.model('User', UserSchema);

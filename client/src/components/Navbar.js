@@ -35,7 +35,8 @@ const Navbar = () => {
         <Link to="/expenses" style={linkStyle}>Expenses</Link>
         <Link to="/budgets" style={linkStyle}>Budgets</Link>
         <Link to="/visualization" style={linkStyle}>Visualization</Link> {/* Add this line for Visualization */}
-        <Link to="http://localhost:3000/financial-tips" style={linkStyle}>Financial Tips</Link> {/* Updated line for Financial Tips */}
+        <Link to="/financial-tips" style={linkStyle}>Financial Tips</Link> {/* Updated line for Financial Tips */}
+        <Link to="/settings" style={linkStyle}>Settings</Link>
       </div>
       <button onClick={handleLogout} style={{ ...linkStyle, backgroundColor: 'red', padding: '5px 10px', borderRadius: '5px' }}>
         Logout

@@ -1,4 +1,5 @@
 // src/App.js
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import Register from './components/auth/Register';
@@ -9,6 +10,10 @@ import ExpenseManager from './components/expenses/ExpenseManager';
 import BudgetManager from './components/budgets/BudgetManager'; // Import BudgetManager
 import VisualizationDashboard from './components/visualization/VisualizationDashboard'; // Import VisualizationDashboard
 import FinancialTips from './components/FinancialTips'; // Import FinancialTips
+import SettingsPage from './components/SettingsPage';
+import ThemeAppearance from './components/ThemeAppearance';
+import AccountSettings from './components/AccountSettings';
+import PersonalInformation from './components/PersonalInformation';
 import './App.css';
 import { AuthProvider, useAuth } from './authContext'; // Import AuthProvider and useAuth hook from authContext
 
@@ -51,9 +56,14 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/expenses" element={<ProtectedRoute><ExpenseManager /></ProtectedRoute>} />
-          <Route path="/budgets" element={<ProtectedRoute><BudgetManager /></ProtectedRoute>} /> {/* New Budget route */}
-          <Route path="/visualization" element={<ProtectedRoute><VisualizationDashboard /></ProtectedRoute>} /> {/* New Visualization route */}
-          <Route path="/financial-tips" element={<ProtectedRoute><FinancialTips /></ProtectedRoute>} /> {/* New Financial Tips route */}
+          <Route path="/budgets" element={<ProtectedRoute><BudgetManager /></ProtectedRoute>} />
+          <Route path="/visualization" element={<ProtectedRoute><VisualizationDashboard /></ProtectedRoute>} />
+          <Route path="/financial-tips" element={<ProtectedRoute><FinancialTips /></ProtectedRoute>} />
+          <Route path="/settings/*" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/settings/theme" element={<ProtectedRoute><ThemeAppearance /></ProtectedRoute>} />
+          <Route path="/settings/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+          <Route path="/settings/personal" element={<ProtectedRoute><PersonalInformation /></ProtectedRoute>} />
+
         </Routes>
       </Router>
     </AuthProvider>

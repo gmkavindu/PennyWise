@@ -31,3 +31,19 @@ body {
 .app-link:hover {
   background-color: #0056b3; /* Darker shade on hover for visual feedback */
 }
+
+:root {
+  --background-color: #ffffff; /* Light background */
+  --text-color: #000000; /* Dark text */
+}
+
+[data-theme='dark'] {
+  --background-color: #333333; /* Dark background */
+  --text-color: #ffffff; /* Light text */
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
+}
