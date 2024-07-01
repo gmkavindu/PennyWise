@@ -2,47 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { fetchExpenses, fetchBudgets } from '../services/api';
 import ExpenseCategoryChart from './visualization/ExpenseCategoryChart';
 import ProgressBar from './ProgressBar';
-import Navbar from './Navbar'; // Import Navbar component
-
-const styles = {
-  container: {
-    padding: '20px',
-    maxWidth: '1200px',
-    margin: '0 auto',
-  },
-  title: {
-    fontSize: '32px',
-    color: '#333',
-    marginBottom: '20px',
-    textAlign: 'center',
-  },
-  section: {
-    marginBottom: '40px',
-  },
-  latestExpenses: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  expenseItem: {
-    width: '100%',
-    maxWidth: '600px',
-    background: '#f9f9f9',
-    borderRadius: '8px',
-    padding: '10px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-    margin: '5px 0',
-  },
-  noDataMessage: {
-    color: '#999',
-    fontSize: '16px',
-    textAlign: 'center',
-  },
-};
+import Navbar from './Navbar';
+import axios from 'axios';
 
 const Dashboard = () => {
+  const [name, setName] = useState('');
+  const [profilePicture, setProfilePicture] = useState('');
   const [expenses, setExpenses] = useState([]);
   const [budgets, setBudgets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getData = async () => {
@@ -51,12 +19,39 @@ const Dashboard = () => {
         const budgetsData = await fetchBudgets();
         setExpenses(expensesData);
         setBudgets(budgetsData);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setLoading(false);
       }
     };
 
     getData();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('/api/auth/profile', {
+          headers: {
+            'x-auth-token': localStorage.getItem('token'),
+          },
+        });
+        setName(response.data.name);
+        setProfilePicture(response.data.profilePicture || '');
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      document.documentElement.setAttribute('data-theme', storedTheme);
+    }
   }, []);
 
   const calculateTotalExpenses = (category) => {
@@ -65,48 +60,69 @@ const Dashboard = () => {
       .reduce((total, expense) => total + expense.amount, 0);
   };
 
+  if (loading) {
+    return <p className="text-center mt-8">Loading...</p>;
+  }
+
   return (
-    <div>
-      <Navbar /> {/* Include Navbar component */}
-      <div style={styles.container}>
-        <h1 style={styles.title}>Dashboard</h1>
-        <div style={styles.section}>
-          <h2>Latest Expenses</h2>
-          <div style={styles.latestExpenses}>
-            {expenses.length > 0 ? (
-              expenses
-                .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort expenses by date in descending order
-                .slice(0, 5)
-                .map((expense) => (
-                  <div key={expense._id} style={styles.expenseItem}>
-                    <p>{expense.description}</p>
-                    <p>Amount: ${expense.amount}</p>
-                    <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
-                  </div>
-                ))
-            ) : (
-              <p style={styles.noDataMessage}>No recent expenses</p>
-            )}
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-32"> {/* Increased margin top to mt-32 */}
+        <div className="flex items-center mb-4">
+          {profilePicture && (
+            <img
+              src={profilePicture.startsWith('http') ? profilePicture : `http://localhost:5000${profilePicture}`}
+              alt="Profile"
+              className="w-12 h-12 rounded-full mr-4 border-2 border-gray-300"
+            />
+          )}
+          <h1 className="text-3xl font-bold">{`Welcome, ${name}!`}</h1>
+        </div>
+        <div className="flex flex-col md:flex-row mb-10">
+          <div className="md:w-1/2 pr-4">
+            <h2 className="text-2xl font-semibold mb-6">Latest Expenses</h2>
+            <div className="flex flex-col items-center">
+              {expenses.length > 0 ? (
+                expenses
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .slice(0, 5)
+                  .map((expense) => (
+                    <div
+                      key={expense._id}
+                      className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 ${
+                        localStorage.getItem('theme') === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
+                      }`}
+                    >
+                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-800'}`}>{expense.description}</p>
+                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Amount: ${expense.amount}</p>
+                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Date: {new Date(expense.date).toLocaleDateString()}</p>
+                    </div>
+                  ))
+              ) : (
+                <p className="text-gray-500 text-center">No recent expenses</p>
+              )}
+            </div>
+          </div>
+          <div className="md:w-1/2 pl-4">
+            <h2 className="text-2xl font-semibold mb-6">Expenses by Category</h2>
+            <ExpenseCategoryChart />
           </div>
         </div>
-        <div style={styles.section}>
-          <h2>Expenses by Category</h2>
-          <ExpenseCategoryChart styles={styles} />
-        </div>
-        <div style={styles.section}>
-          <h2>Budget Progress</h2>
-          {budgets.map((budget) => {
-            const totalExpenses = calculateTotalExpenses(budget.category);
-            return (
-              <ProgressBar
-                key={budget._id}
-                category={budget.category}
-                total={budget.limit}
-                current={totalExpenses}
-                styles={styles}
-              />
-            );
-          })}
+        <div className="mb-10">
+          <h2 className="text-2xl font-semibold mb-6">Budget Progress</h2>
+          <div className="flex flex-col">
+            {budgets.map((budget) => {
+              const totalExpenses = calculateTotalExpenses(budget.category);
+              return (
+                <ProgressBar
+                  key={budget._id}
+                  category={budget.category}
+                  total={budget.limit}
+                  current={totalExpenses}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

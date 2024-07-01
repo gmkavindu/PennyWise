@@ -1,24 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-const ProgressBar = ({ category, total, current, styles }) => {
-  // Calculate the percentage of budget used
-  const percentage = total !== 0 ? Math.min((current / total) * 100, 100) : 0;
+const ProgressBar = ({ category, total, current }) => {
+  const percentage = (current / total) * 100;
+  
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      document.documentElement.setAttribute('data-theme', storedTheme);
+    }
+  }, []);
 
   return (
-    <div style={styles.progressBarContainer}>
-      <p>{category}</p>
-      <div style={styles.progressBar}>
+    <div className="mb-4">
+      <h3 className={`text-lg font-medium mb-2 ${localStorage.getItem('theme') === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{category}</h3>
+      <div className="relative w-full h-6 bg-gray-200 rounded-full overflow-hidden border border-black">
         <div
-          style={{
-            ...styles.progress,
-            width: `${percentage}%`,
-            backgroundColor: percentage > 80 ? 'red' : 'green',
-          }}
-        >
-          {`${percentage.toFixed(2)}%`}
+          className={`absolute left-0 top-0 h-full ${percentage >= 80 ? 'bg-red-500' : 'bg-green-500'} border border-transparent`}
+          style={{ width: `${percentage}%` }}
+        />
+        <div className="absolute inset-0 flex justify-center items-center">
+          <span className={`font-semibold text-gray-700`}>{`${Math.round(percentage)}%`}</span>
         </div>
       </div>
+      <div className={`text-right mt-1 text-sm ${localStorage.getItem('theme') === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{`$${current} of $${total}`}</div>
     </div>
   );
 };
@@ -27,7 +32,6 @@ ProgressBar.propTypes = {
   category: PropTypes.string.isRequired,
   total: PropTypes.number.isRequired,
   current: PropTypes.number.isRequired,
-  styles: PropTypes.object.isRequired,
 };
 
 export default ProgressBar;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { fetchExpenses } from '../../services/api';
-import './ChartStyles.css';
 
 const ExpenseCategoryChart = () => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
@@ -42,13 +41,35 @@ const ExpenseCategoryChart = () => {
     getData();
   }, []);
 
+  // Determine background color and text color based on theme
+  const getBackgroundColor = () => {
+    return localStorage.getItem('theme') === 'dark' ? 'bg-gray-800' : 'bg-white';
+  };
+
+  const getTextColor = () => {
+    return localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-800';
+  };
+
   return (
-    <div className="chart-container">
-      <div className="chart-wrapper">
+    <div className={`shadow-md rounded-lg p-4 ${getBackgroundColor()} ${getTextColor()}`}>
+      <div className="h-96"> {/* Increase the height for larger chart */}
         {chartData.labels.length > 0 ? (
-          <Pie data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
+          <Pie
+            data={chartData}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: localStorage.getItem('theme') === 'dark' ? '#fff' : '#333',
+                  },
+                },
+              },
+            }}
+          />
         ) : (
-          <p className="no-data-message">No data available</p>
+          <p className="text-center text-gray-500 italic">No data available</p>
         )}
       </div>
     </div>
