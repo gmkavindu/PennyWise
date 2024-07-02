@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -23,6 +22,9 @@ mongoose.connect(MONGODB_URI, {
   console.log('MongoDB connected');
 }).catch(err => console.log(err));
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/build')));
+
 // API routes
 const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
@@ -33,6 +35,11 @@ app.use('/api/auth', authRoutes);
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
+});
+
+// The "catchall" handler: for any request that doesn't match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
 // Start server

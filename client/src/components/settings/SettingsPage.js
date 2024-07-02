@@ -131,7 +131,7 @@ const SettingsPage = () => {
         {modalContent && (
           <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 transition-opacity duration-300 ease-in-out">
             <div 
-              className={`relative p-4 rounded-lg shadow-lg ${theme === 'light' ? 'bg-white' : 'bg-gray-700 text-white'} transition-transform duration-300 ease-in-out transform scale-95`} 
+              className={`relative p-4 rounded-lg shadow-lg ${theme === 'light' ? 'bg-white' : 'bg-gray-800 text-white'} transition-transform duration-300 ease-in-out transform scale-95`} 
               ref={modalRef} 
               onClick={handleModalClick}
             >
