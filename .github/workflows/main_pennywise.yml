@@ -28,9 +28,6 @@ jobs:
           npm run build
           mkdir -p ../server/public
           cp -r ./build ../server/public
-
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r    
             
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
@@ -53,9 +50,6 @@ jobs:
         with:
           name: mern-app
 
-      - name: Unzip artifact for deployment
-        run: unzip release.zip    
-
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -70,4 +64,3 @@ jobs:
           app-name: 'pennywise'
           slot-name: 'Production'
           package: .
-
