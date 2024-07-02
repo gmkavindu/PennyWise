@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy MERN app to Azure Web App - pennywise
+name: Build and deploy Node.js app to Azure Web App - pennywise
 
 on:
   push:
@@ -14,34 +11,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          node-version: '20.x'      
 
-      - name: Install and build client
+      - name: Install npm packages - server
+        run: |
+          cd server
+          npm install       
+      
+      - name: Install npm packages, build then copy files - client
         run: |
           cd client
           npm install
           npm run build
-        working-directory: ./client
-
-      - name: Install server dependencies
-        run: |
-          cd server
-          npm install
-        working-directory: ./server
-
-      - name: Zip artifact for deployment
-        run: zip -r release.zip server/* client/build/*
-
+          cp -r ./build ./server/public
+            
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: mern-app
-          path: release.zip
+          path: mern/server
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,7 +41,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # This is required for requesting the JWT
+      id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -75,3 +66,4 @@ jobs:
           app-name: 'pennywise'
           slot-name: 'Production'
           package: .
+
