@@ -30,74 +30,24 @@ const ThemeAppearance = () => {
     }
   };
 
-  // Styles
-  const styles = {
-    container: {
-      maxWidth: '400px',
-      margin: '0 auto',
-      padding: '20px',
-      borderRadius: '8px',
-      backgroundColor: 'var(--background)',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    },
-    header: {
-      marginBottom: '20px',
-      textAlign: 'center',
-    },
-    message: {
-      marginBottom: '10px',
-      color: 'var(--message-color)',
-      textAlign: 'center',
-    },
-    formGroup: {
-      marginBottom: '20px',
-    },
-    label: {
-      display: 'block',
-      marginBottom: '5px',
-      fontWeight: 'bold',
-    },
-    select: {
-      width: '100%',
-      padding: '8px',
-      border: '1px solid var(--border-color)',
-      borderRadius: '4px',
-      backgroundColor: 'var(--input-background)',
-      color: 'var(--input-text)',
-    },
-    button: {
-      width: '100%',
-      padding: '10px',
-      border: 'none',
-      borderRadius: '4px',
-      backgroundColor: 'var(--button-background)',
-      color: 'var(--button-text)',
-      fontSize: '16px',
-      cursor: 'pointer',
-    },
-    buttonHover: {
-      backgroundColor: 'var(--button-background-hover)',
-    }
-  };
-
   return (
-    <div style={styles.container}>
-      <h2 style={styles.header}>Theme and Appearance</h2>
-      {message && <p style={styles.message}>{message}</p>}
-      <form onSubmit={handleSubmit} style={styles.formGroup}>
-        <div style={styles.formGroup}>
-          <label htmlFor="theme-select" style={styles.label}>Theme:</label>
+    <div className={`max-w-md mx-auto p-6 rounded-lg shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
+      <h2 className="text-2xl font-semibold mb-4 text-center">Theme and Appearance</h2>
+      {message && <p className="mb-4 p-3 rounded text-center text-green-800 bg-green-200">{message}</p>}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label htmlFor="theme-select" className="block font-bold mb-1">Theme:</label>
           <select
             id="theme-select"
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
-            style={styles.select}
+            className="w-full p-2 border rounded bg-gray-200 text-gray-900"
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
           </select>
         </div>
-        <button type="submit" style={styles.button}>Update</button>
+        <button type="submit" className="w-full p-3 border-none rounded bg-blue-500 text-white hover:bg-blue-600 cursor-pointer">Update</button>
       </form>
     </div>
   );

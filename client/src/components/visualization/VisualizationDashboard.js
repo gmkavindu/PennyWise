@@ -1,46 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../Navbar'; // Assuming Navbar is located in src/components/Navbar
 import ExpenseTrendChart from './ExpenseTrendChart';
 import ExpenseCategoryChart from './ExpenseCategoryChart';
 
-const styles = {
-  container: {
-    padding: '20px',
-    maxWidth: '1000px',
-    margin: '0 auto',
-    textAlign: 'center',
-  },
-  title: {
-    fontSize: '32px',
-    color: '#333',
-    marginBottom: '20px',
-  },
-  chartSection: {
-    marginBottom: '40px',
-  },
-  chartTitle: {
-    fontSize: '24px',
-    marginBottom: '20px',
-    color: '#555',
-  },
-  noDataMessage: {
-    color: '#999',
-    fontSize: '16px',
-  }
-};
-
 const VisualizationDashboard = () => {
+  const [theme, setTheme] = useState('light'); // State for theme, default is light
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      setTheme(storedTheme); // Set theme from localStorage
+    }
+  }, []);
+
   return (
-    <div>
+    <div className={`${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} mt-32 mb-20`}>
       <Navbar /> {/* Include Navbar component */}
-      <div style={styles.container}>
-        <h1 style={styles.title}>Data Visualization</h1>
-        <div style={styles.chartSection}>
-          <h2 style={styles.chartTitle}>Expense Trend Over Time</h2>
+      <div className="max-w-4xl mx-auto p-6">
+        <h1 className="text-center text-4xl font-bold mb-8">Data Visualization</h1>
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4">Expense Trend Over Time</h2>
           <ExpenseTrendChart />
         </div>
-        <div style={styles.chartSection}>
-          <h2 style={styles.chartTitle}>Expense Distribution by Category</h2>
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Expense Distribution by Category</h2>
           <ExpenseCategoryChart />
         </div>
       </div>

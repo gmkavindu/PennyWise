@@ -1,16 +1,11 @@
 import React from 'react';
 import BudgetItem from './BudgetItem';
 
-const listStyle = {
-  listStyleType: 'none',
-  padding: '0',
-};
-
-const BudgetList = ({ budgets, onEdit, onDelete }) => {
+const BudgetList = ({ budgets, onEdit, onDelete, theme }) => {
   return (
-    <ul style={listStyle}>
+    <ul className={`list-none ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
       {budgets.map((budget) => (
-        <BudgetItem key={budget._id} budget={budget} onEdit={onEdit} onDelete={onDelete} />
+        <BudgetItem key={budget._id} budget={budget} onEdit={onEdit} onDelete={onDelete} theme={theme} />
       ))}
     </ul>
   );

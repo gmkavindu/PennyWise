@@ -67,7 +67,7 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-32"> {/* Increased margin top to mt-32 */}
+      <div className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-32 mb-20"> {/* Increased margin top to mt-32 */}
         <div className="flex items-center mb-4">
           {profilePicture && (
             <img

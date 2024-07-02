@@ -32,8 +32,20 @@ const UserSchema = new mongoose.Schema({
     default: 'light',
   },
   profilePicture: {
-    type: String, // path to the profile picture
+    type: String, // Path to the profile picture
   },
+  budgets: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Budget',
+    },
+  ],
+  expenses: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Expense',
+    },
+  ],
 });
 
 module.exports = mongoose.model('User', UserSchema);

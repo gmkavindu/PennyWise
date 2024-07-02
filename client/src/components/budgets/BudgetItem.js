@@ -1,42 +1,23 @@
 import React from 'react';
+import { RiPencilLine, RiDeleteBinLine } from 'react-icons/ri'; // Importing icons from react-icons
 
-const itemStyle = {
-  padding: '10px',
-  marginBottom: '10px',
-  backgroundColor: '#fff',
-  border: '1px solid #ddd',
-  borderRadius: '5px',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-};
-
-const buttonStyle = {
-  padding: '5px 10px',
-  marginLeft: '5px',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
-const editButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: '#007bff',
-  color: '#fff',
-};
-
-const deleteButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: 'red',
-  color: '#fff',
-};
-
-const BudgetItem = ({ budget, onEdit, onDelete }) => {
+const BudgetItem = ({ budget, onEdit, onDelete, theme }) => {
   return (
-    <li style={itemStyle}>
+    <li className={`p-4 mb-4 border rounded flex justify-between items-center ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
       <span>{budget.category}: RS.{budget.limit}</span>
       <div>
-        <button onClick={() => onEdit(budget)} style={editButtonStyle}>Edit</button>
-        <button onClick={() => onDelete(budget._id)} style={deleteButtonStyle}>Delete</button>
+        <button
+          className={`px-3 py-3 rounded-full cursor-pointer mr-2 ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-blue-700 text-white'}`}
+          onClick={() => onEdit(budget)}
+        >
+          <RiPencilLine /> {/* Edit icon */}
+        </button>
+        <button
+          className={`px-3 py-3 rounded-full cursor-pointer ${theme === 'light' ? 'bg-red-500 text-white' : 'bg-red-700 text-white'}`}
+          onClick={() => onDelete(budget._id)}
+        >
+          <RiDeleteBinLine /> {/* Delete icon */}
+        </button>
       </div>
     </li>
   );

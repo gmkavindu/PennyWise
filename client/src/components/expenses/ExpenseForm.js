@@ -1,32 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const formStyle = {
-  padding: '20px',
-  backgroundColor: '#f9f9f9',
-  borderRadius: '5px',
-  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-  marginBottom: '20px',
-};
-
-const inputStyle = {
-  width: '100%',
-  padding: '10px',
-  marginBottom: '10px',
-  border: '1px solid #ddd',
-  borderRadius: '5px',
-};
-
-const buttonStyle = {
-  padding: '10px 20px',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
-const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
+const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
@@ -34,6 +9,14 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
   const [budgets, setBudgets] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [alertMessage, setAlertMessage] = useState('');
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      setTheme(storedTheme); // Set theme from localStorage
+    }
+  }, []);
 
   useEffect(() => {
     const fetchBudgets = async () => {
@@ -133,28 +116,33 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
     setAlertMessage('');
   };
 
+  const handleCancel = () => {
+    clearEdit();
+    onClose(); // Close the modal on cancel
+  };
+
   return (
-    <form onSubmit={handleSubmit} style={formStyle}>
-      {alertMessage && <div style={{ color: 'red' }}>{alertMessage}</div>}
-      <div>
-        <label>Amount:</label>
+    <form onSubmit={handleSubmit} className={`p-4 rounded shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`}>
+      {alertMessage && <div className="text-red-500 mb-4">{alertMessage}</div>}
+      <div className="mb-4">
+        <label className="block text-sm font-medium">Amount</label>
         <input
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
+          className={`mt-1 p-2 block w-full border rounded focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 border-gray-300 bg-white' : 'focus:ring-blue-500 border-gray-700 bg-gray-700 text-white'}`}
           required
-          style={inputStyle}
         />
       </div>
-      <div>
-        <label>Category:</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium">Category</label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          className={`mt-1 p-2 block w-full border rounded focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 border-gray-300 bg-white' : 'focus:ring-blue-500 border-gray-700 bg-gray-700 text-white'}`}
           required
-          style={inputStyle}
         >
-          <option value="">Select Category</option>
+          <option value="">Select a category</option>
           {budgets.map((budget) => (
             <option key={budget._id} value={budget.category}>
               {budget.category}
@@ -162,27 +150,39 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit }) => {
           ))}
         </select>
       </div>
-      <div>
-        <label>Date:</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium">Date</label>
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          className={`mt-1 p-2 block w-full border rounded focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 border-gray-300 bg-white' : 'focus:ring-blue-500 border-gray-700 bg-gray-700 text-white'}`}
           required
-          style={inputStyle}
         />
       </div>
-      <div>
-        <label>Description:</label>
+      <div className="mb-4">
+        <label className="block text-sm font-medium">Description</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={inputStyle}
+          className={`mt-1 p-2 block w-full border rounded focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 border-gray-300 bg-white' : 'focus:ring-blue-500 border-gray-700 bg-gray-700 text-white'}`}
         ></textarea>
       </div>
-      <button type="submit" style={buttonStyle}>
-        {expenseToEdit ? 'Update' : 'Add'} Expense
-      </button>
+      <div className="flex justify-end space-x-2">
+        <button
+          type="button"
+          onClick={handleCancel}
+          className={`px-4 py-2 rounded hover:bg-red-600 transition-all duration-300 ease-in-out ${theme === 'light' ? 'bg-red-500 text-white' : 'bg-gray-700 text-white'}`}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className={`px-4 py-2 rounded hover:bg-blue-600 transition-all duration-300 ease-in-out ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-gray-700 text-white'}`}
+        >
+          {expenseToEdit ? 'Update' : 'Add'} Expense
+        </button>
+      </div>
     </form>
   );
 };

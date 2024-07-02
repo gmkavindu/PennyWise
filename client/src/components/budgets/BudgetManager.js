@@ -5,22 +5,21 @@ import Navbar from '../Navbar';
 import BudgetChart from './BudgetChart';
 import { fetchBudgets, addBudget, deleteBudget, updateBudget, fetchExpenses } from '../../services/api';
 
-const containerStyle = {
-  maxWidth: '800px',
-  margin: '20px auto',
-  padding: '20px',
-  backgroundColor: '#f9f9f9',
-  border: '1px solid #ddd',
-  borderRadius: '5px',
-  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-};
-
 const BudgetManager = () => {
   const [budgets, setBudgets] = useState([]);
   const [budgetToEdit, setBudgetToEdit] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [decreaseMessage, setDecreaseMessage] = useState('');
   const [deleteMessage, setDeleteMessage] = useState('');
+  const [theme, setTheme] = useState('light'); // State for theme, default is light
+  const [showAddPopup, setShowAddPopup] = useState(false); // State for showing add budget popup
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      setTheme(storedTheme); // Set theme from localStorage
+    }
+  }, []);
 
   useEffect(() => {
     const fetchBudgetsData = async () => {
@@ -77,6 +76,7 @@ const BudgetManager = () => {
         setBudgets([...budgets, newBudget]);
       }
       setBudgetToEdit(null);
+      setShowAddPopup(false); // Close the popup after saving
     } catch (error) {
       console.error('Error saving budget:', error);
     }
@@ -84,6 +84,7 @@ const BudgetManager = () => {
 
   const handleEditBudget = (budget) => {
     setBudgetToEdit(budget);
+    setShowAddPopup(true); // Open the popup for editing
   };
 
   const handleDeleteBudget = async (id) => {
@@ -102,25 +103,53 @@ const BudgetManager = () => {
     }
   };
 
+  const handleClearForm = () => {
+    setBudgetToEdit(null);
+    setShowAddPopup(false);
+  };
+
+  const handleOutsideClick = (e) => {
+    if (e.target.classList.contains('popup-bg')) {
+      handleClearForm();
+    }
+  };
+
   return (
-    <div>
-      <Navbar />
-      <div style={containerStyle}>
-        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Budget Manager</h2>
-        {decreaseMessage && (
-          <div style={{ marginBottom: '10px', color: 'red', fontWeight: 'bold' }}>{decreaseMessage}</div>
+    <div className={`${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
+      <Navbar theme={theme} />
+      <div className="max-w-4xl mx-auto p-6 border rounded-lg shadow-md mt-32">
+        <h2 className="text-center text-2xl mb-6">Budget Manager</h2>
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md mb-4"
+          onClick={() => setShowAddPopup(true)}
+        >
+          Add New Budget
+        </button>
+
+        {showAddPopup && (
+          <div
+            className={`fixed inset-0 flex items-center justify-center z-50 popup-bg bg-${theme === 'light' ? 'white' : 'gray-800'} bg-opacity-75`}
+            onClick={handleOutsideClick}
+          >
+            <div className={`p-6 rounded-lg shadow-md w-full sm:w-96 relative bg-${theme === 'light' ? 'bg-white border-black border-2' : 'gray-900'}`}>
+              <div className="mb-4">
+                <BudgetForm
+                  onSave={handleSaveBudget}
+                  budgetToEdit={budgetToEdit}
+                  clearEdit={handleClearForm}
+                  totalExpensesForCategory={calculateTotalExpensesForCategory(budgetToEdit?.category)}
+                  theme={theme}
+                />
+              </div>
+              {/* You can add more content or components here */}
+            </div>
+          </div>
         )}
-        {deleteMessage && (
-          <div style={{ marginBottom: '10px', color: 'red', fontWeight: 'bold' }}>{deleteMessage}</div>
-        )}
-        <BudgetForm
-          onSave={handleSaveBudget}
-          budgetToEdit={budgetToEdit}
-          clearEdit={() => setBudgetToEdit(null)}
-          totalExpensesForCategory={calculateTotalExpensesForCategory(budgetToEdit?.category || '')}
-        />
-        <BudgetList budgets={budgets} onEdit={handleEditBudget} onDelete={handleDeleteBudget} />
-        <BudgetChart budgets={budgets} expenses={expenses} />
+
+        {decreaseMessage && <div className="text-red-600">{decreaseMessage}</div>}
+        <BudgetList budgets={budgets} onEdit={handleEditBudget} onDelete={handleDeleteBudget} theme={theme} />
+        {deleteMessage && <div className="text-red-600">{deleteMessage}</div>}
+        <BudgetChart budgets={budgets} expenses={expenses} theme={theme} />
       </div>
     </div>
   );

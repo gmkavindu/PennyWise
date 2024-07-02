@@ -1,28 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const formStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '10px',
-};
-
-const inputStyle = {
-  padding: '8px',
-  width: '100%',
-  boxSizing: 'border-box',
-};
-
-const buttonStyle = {
-  padding: '10px 20px',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer',
-};
-
-const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory }) => {
+const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory, theme }) => {
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
@@ -60,10 +38,10 @@ const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory 
   };
 
   return (
-    <form style={formStyle} onSubmit={handleSubmit}>
-      {alertMessage && <div style={{ color: 'red' }}>{alertMessage}</div>}
+    <form className={`flex flex-col items-center gap-4 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`} onSubmit={handleSubmit}>
+      {alertMessage && <div className="text-red-600">{alertMessage}</div>}
       <input
-        style={inputStyle}
+        className={`px-4 py-2 w-full border rounded ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`}
         type="text"
         placeholder="Category"
         value={category}
@@ -71,18 +49,18 @@ const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory 
         required
       />
       <input
-        style={inputStyle}
+        className={`px-4 py-2 w-full border rounded ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`}
         type="number"
         placeholder="Limit"
         value={limit}
         onChange={(e) => setLimit(e.target.value)}
         required
       />
-      <button style={buttonStyle} type="submit">
+      <button className="px-6 py-3 bg-blue-500 text-white rounded cursor-pointer" type="submit">
         {budgetToEdit ? 'Update Budget' : 'Add Budget'}
       </button>
       {budgetToEdit && (
-        <button style={buttonStyle} type="button" onClick={clearForm}>
+        <button className="px-6 py-3 bg-gray-500 text-white rounded cursor-pointer" type="button" onClick={clearForm}>
           Cancel
         </button>
       )}

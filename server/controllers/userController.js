@@ -1,5 +1,5 @@
 const User = require('../models/User');
-
+const fs = require('fs');
 // Update Account Settings
 exports.updateAccount = async (req, res) => {
   const { email, password } = req.body;

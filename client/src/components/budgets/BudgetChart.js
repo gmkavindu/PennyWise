@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto'; // Import Chart.js without LinearScale
 
-const BudgetChart = ({ budgets, expenses }) => {
+const BudgetChart = ({ budgets, expenses, theme }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null); // Ref to store the Chart.js instance
 
@@ -25,16 +25,16 @@ const BudgetChart = ({ budgets, expenses }) => {
           datasets: [
             {
               label: 'Budget Limit',
-              backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue color for budget limit
-              borderColor: 'rgba(54, 162, 235, 1)',
+              backgroundColor: theme === 'light' ? 'rgba(54, 162, 235, 0.6)' : 'rgba(33, 150, 243, 0.6)', // Blue color for budget limit
+              borderColor: theme === 'light' ? 'rgba(54, 162, 235, 1)' : 'rgba(33, 150, 243, 1)',
               borderWidth: 1,
               data: budgetLimits,
               order: 1, // Ensure budget bars are behind expense bars
             },
             {
               label: 'Total Expenses',
-              backgroundColor: 'rgba(180, 0, 0, 0.6)', // Dark red color for total expenses
-              borderColor: 'rgba(180, 0, 0, 1)',
+              backgroundColor: theme === 'light' ? 'rgba(255, 99, 132, 0.6)' : 'rgba(255, 64, 129, 0.6)', // Red color for total expenses
+              borderColor: theme === 'light' ? 'rgba(255, 99, 132, 1)' : 'rgba(255, 64, 129, 1)',
               borderWidth: 1,
               data: totalExpenses,
               order: 2, // Ensure expense bars are in front of budget bars
@@ -76,7 +76,7 @@ const BudgetChart = ({ budgets, expenses }) => {
         },
       });
     }
-  }, [budgets, expenses]);
+  }, [budgets, expenses, theme]);
 
   return <canvas ref={chartRef} />;
 };

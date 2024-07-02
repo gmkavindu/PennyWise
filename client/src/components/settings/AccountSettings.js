@@ -2,26 +2,22 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const AccountSettings = () => {
-  const [userData, setUserData] = useState({
-    email: '',
-    password: '',
-  });
+  const [userData, setUserData] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      setTheme(storedTheme);
+    }
     const fetchUserData = async () => {
       try {
         const response = await axios.get('/api/auth/profile', {
-          headers: {
-            'x-auth-token': localStorage.getItem('token'),
-          },
+          headers: { 'x-auth-token': localStorage.getItem('token') },
         });
-        setUserData({
-          email: response.data.email,
-          password: '',
-        });
-        setMessage('User data fetched successfully');
+        setUserData({ email: response.data.email, password: '' });
         setMessageType('success');
       } catch (error) {
         console.error('Failed to fetch user data:', error);
@@ -29,7 +25,6 @@ const AccountSettings = () => {
         setMessageType('error');
       }
     };
-
     fetchUserData();
   }, []);
 
@@ -37,9 +32,7 @@ const AccountSettings = () => {
     e.preventDefault();
     try {
       const response = await axios.put('/api/auth/profile', userData, {
-        headers: {
-          'x-auth-token': localStorage.getItem('token'),
-        },
+        headers: { 'x-auth-token': localStorage.getItem('token') },
       });
       setMessage(response.data.message || 'Account updated successfully');
       setMessageType('success');
@@ -51,89 +44,41 @@ const AccountSettings = () => {
   };
 
   const handleChange = (e) => {
-    setUserData({
-      ...userData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const styles = {
-    container: {
-      maxWidth: '400px',
-      margin: '0 auto',
-      padding: '20px',
-      borderRadius: '8px',
-      backgroundColor: 'var(--background)',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    },
-    header: {
-      marginBottom: '20px',
-      textAlign: 'center',
-    },
-    message: {
-      marginBottom: '10px',
-      padding: '10px',
-      borderRadius: '4px',
-      textAlign: 'center',
-      color: messageType === 'success' ? 'green' : 'red',
-      backgroundColor: messageType === 'success' ? '#e0ffe0' : '#ffe0e0',
-    },
-    formGroup: {
-      marginBottom: '20px',
-    },
-    label: {
-      display: 'block',
-      marginBottom: '5px',
-      fontWeight: 'bold',
-    },
-    input: {
-      width: '100%',
-      padding: '8px',
-      border: '1px solid var(--border-color)',
-      borderRadius: '4px',
-      backgroundColor: 'var(--input-background)',
-      color: 'var(--input-text)',
-    },
-    button: {
-      width: '100%',
-      padding: '10px',
-      border: 'none',
-      borderRadius: '4px',
-      backgroundColor: 'var(--button-background)',
-      color: 'var(--button-text)',
-      fontSize: '16px',
-      cursor: 'pointer',
-    },
+    setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.header}>Account Settings</h2>
-      {message && <p style={styles.message}>{message}</p>}
+    <div className={`max-w-md mx-auto p-6 rounded-lg shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
+      <h2 className="text-2xl font-semibold mb-4 text-center">Account Settings</h2>
+      {message && (
+        <p className={`mb-4 p-3 rounded text-center ${messageType === 'success' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+          {message}
+        </p>
+      )}
       <form onSubmit={handleSubmit}>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Email:</label>
+        <div className="mb-4">
+          <label className="block font-bold mb-1">Email:</label>
           <input
             type="email"
             name="email"
             value={userData.email}
             onChange={handleChange}
             required
-            style={styles.input}
+            className="w-full p-2 border rounded bg-gray-200 text-gray-900"
           />
         </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Password:</label>
+        <div className="mb-4">
+          <label className="block font-bold mb-1">Password:</label>
           <input
             type="password"
             name="password"
             value={userData.password}
             onChange={handleChange}
             required
-            style={styles.input}
+            className="w-full p-2 border rounded bg-gray-200 text-gray-900"
           />
         </div>
-        <button type="submit" style={styles.button}>Update</button>
+        <button type="submit" className="w-full p-2 rounded bg-blue-600 text-white hover:bg-blue-700">Update</button>
       </form>
     </div>
   );

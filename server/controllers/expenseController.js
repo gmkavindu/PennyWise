@@ -50,8 +50,12 @@ exports.addExpense = async (req, res) => {
 
         const expense = await newExpense.save();
 
-        // Update user's last expenses update timestamp
-        await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date().toISOString() });
+        // Update user's expenses array with the newly created expense's ID
+        await User.findByIdAndUpdate(
+            req.user.id,
+            { $push: { expenses: expense._id }, $set: { lastExpensesUpdate: new Date() } },
+            { new: true }
+        );
 
         res.json(expense);
     } catch (err) {
@@ -81,7 +85,7 @@ exports.updateExpense = async (req, res) => {
         );
 
         // Update user's last expenses update timestamp
-        await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date().toISOString() });
+        await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date() });
 
         res.json(expense);
     } catch (err) {
@@ -92,23 +96,23 @@ exports.updateExpense = async (req, res) => {
 // Delete an expense
 exports.deleteExpense = async (req, res) => {
     try {
-      let expense = await Expense.findById(req.params.id);
-  
-      if (!expense) return res.status(404).json({ msg: 'Expense not found' });
-  
-      // Ensure user owns expense
-      if (expense.user.toString() !== req.user.id) {
-        return res.status(401).json({ msg: 'User not authorized' });
-      }
-  
-      await Expense.findByIdAndDelete(req.params.id);
+        let expense = await Expense.findById(req.params.id);
 
-      // Update user's last expenses update timestamp
-      await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date().toISOString() });
+        if (!expense) return res.status(404).json({ msg: 'Expense not found' });
 
-      res.json({ msg: 'Expense removed' });
+        // Ensure user owns expense
+        if (expense.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'User not authorized' });
+        }
+
+        await Expense.findByIdAndDelete(req.params.id);
+
+        // Update user's last expenses update timestamp
+        await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date() });
+
+        res.json({ msg: 'Expense removed' });
     } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).send('Server Error');
     }
 };

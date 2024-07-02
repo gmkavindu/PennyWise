@@ -7,6 +7,14 @@ const FinancialTips = () => {
   const [tips, setTips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      setTheme(storedTheme);
+    }
+  }, []);
 
   const parseTips = useCallback((response) => {
     const lines = response.split('\n').filter(line => line.trim() !== '');
@@ -14,7 +22,6 @@ const FinancialTips = () => {
       let type = 'normal';
       let icon = '';
 
-      // Highlight specific keywords (e.g., WASH)
       const keywordToHighlight = 'WASH:';
       if (line.toUpperCase().includes(keywordToHighlight)) {
         type = 'highlighted';
@@ -89,96 +96,32 @@ const FinancialTips = () => {
     }
   };
 
-  const styles = {
-    container: {
-      fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-      padding: '20px',
-      maxWidth: '800px',
-      margin: '0 auto',
-      backgroundColor: '#f9f9f9',
-      borderRadius: '10px',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    },
-    heading: {
-      fontSize: '32px',
-      marginBottom: '20px',
-      color: '#333',
-      textAlign: 'center',
-    },
-    loading: {
-      fontSize: '18px',
-      color: '#666',
-      textAlign: 'center',
-      marginTop: '20px',
-    },
-    error: {
-      fontSize: '18px',
-      color: 'red',
-      textAlign: 'center',
-      marginTop: '20px',
-    },
-    tipsContainer: {
-      marginTop: '20px',
-    },
-    section: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      marginBottom: '10px',
-      color: '#0056b3',
-    },
-    card: {
-      marginBottom: '20px',
-      padding: '15px',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-      backgroundColor: '#ffffff',
-    },
-    bold: {
-      fontWeight: 'bold',
-      color: '#0056b3',
-    },
-    semiBold: {
-      fontWeight: '600',
-      color: '#007bff',
-    },
-    normal: {
-      color: '#333',
-    },
-    highlighted: {
-      fontWeight: 'bold',
-      color: '#ff6b6b', // Red color for highlighting
-    },
-    icon: {
-      marginRight: '10px',
-    },
-  };
-
   const renderTips = () => {
     if (loading) {
-      return <Spinner animation="border" variant="primary" style={styles.loading} />;
+      return <Spinner animation="border" variant="primary" className="text-center mt-4" />;
     }
 
     if (error) {
-      return <Alert variant="danger" style={styles.error}>Error: {error}</Alert>;
+      return <Alert variant="danger" className="text-center mt-4">Error: {error}</Alert>;
     }
 
     if (tips.length === 0) {
-      return <Alert variant="info">No tips available</Alert>;
+      return <Alert variant="info" className="text-center mt-4">No tips available</Alert>;
     }
 
     return (
-      <div style={styles.tipsContainer}>
+      <div className="mt-4">
         {tips.map(({ text, type, icon, index }) => (
-          <div key={index} style={styles.card}>
+          <div key={index} className={`mb-4 p-4 rounded-lg shadow-lg transition-transform transform hover:scale-105 ${theme === 'dark' ? 'bg-gray-800 text-white border border-white' : 'bg-white text-gray-800'}`}>
             {type === 'section' && (
-              <div style={styles.section}>{text}</div>
+              <div className="text-2xl font-bold mb-2 text-blue-600">{text}</div>
             )}
             {type === 'highlighted' && (
-              <div style={styles.highlighted}>{text}</div>
+              <div className="font-bold text-red-600">{text}</div>
             )}
             {type !== 'section' && type !== 'highlighted' && (
-              <div style={styles[type]}>
-                {icon && <span style={styles.icon}>{icon}</span>}
+              <div className={`text-base ${type === 'bold' ? 'font-bold text-blue-600' : ''} ${type === 'semiBold' ? 'font-semibold text-blue-500' : ''} ${type === 'normal' ? (theme === 'dark' ? 'text-white' : 'text-gray-800') : ''}`}>
+                {icon && <span className="mr-2">{icon}</span>}
                 {text}
               </div>
             )}
@@ -192,9 +135,9 @@ const FinancialTips = () => {
     <>
       <Navbar />
       <Container>
-        <div style={styles.container}>
-          <h1 style={styles.heading}>Personalized Financial Tips 💡</h1>
-          {loading && <div style={styles.loading}>Loading...</div>}
+        <div className={`rounded-lg shadow-md p-4 mx-auto mt-32 mb-20 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} max-w-4xl`}>
+          <h1 className="text-4xl font-bold mb-4 text-center">Personalized Financial Tips 💡</h1>
+          {loading && <div className="text-center">Loading...</div>}
           {!loading && renderTips()}
         </div>
       </Container>
