@@ -1,30 +1,15 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
 const Budget = require('../models/Budget');
 const Expense = require('../models/Expense');
-const router = express.Router();
 const authMiddleware = require('../middleware/auth');
 
-// Multer storage configuration for profile pictures
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/profiles'); // Directory where profile pictures will be stored
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Rename file with timestamp
-  },
-});
-
-// Multer upload instance for profile pictures
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 1048576 }, // Limit file size to 1MB (adjust as necessary)
-});
+const { upload, PROFILE_PICTURES_DIR } = require('../middleware/upload');
+const router = express.Router();
 
 // @route   POST /api/auth/register
 // @desc    Register user
@@ -117,6 +102,16 @@ router.post('/login', async (req, res) => {
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Append base URL to profilePicture path
+    if (user.profilePicture) {
+      user.profilePicture = `${req.protocol}://${req.get('host')}/uploads/profiles/${path.basename(user.profilePicture)}`;
+    }
+
     res.json(user);
   } catch (err) {
     console.error(err.message);
@@ -153,7 +148,7 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
     // Check if there's an existing profile picture and delete it if updating
     if (user.profilePicture && req.file) {
       // Delete old profile picture file
-      fs.unlinkSync(`./${user.profilePicture}`);
+      fs.unlinkSync(path.join(PROFILE_PICTURES_DIR, path.basename(user.profilePicture)));
     }
 
     user = await User.findByIdAndUpdate(
@@ -162,7 +157,12 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
       { new: true }
     ).select('-password');
 
-    res.json(user);
+    // Append base URL to profilePicture path
+    if (user.profilePicture) {
+      user.profilePicture = `${req.protocol}://${req.get('host')}${user.profilePicture}`;
+    }
+
+    res.json(user); // Send back updated user object with new profile picture URL
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -241,7 +241,7 @@ router.delete('/delete-account', authMiddleware, async (req, res) => {
 
     // Delete profile picture from local folder if exists
     if (user.profilePicture) {
-      fs.unlinkSync(`./${user.profilePicture}`);
+      fs.unlinkSync(path.join(PROFILE_PICTURES_DIR, path.basename(user.profilePicture)));
     }
 
     // Delete budgets and expenses related to the user
@@ -254,7 +254,7 @@ router.delete('/delete-account', authMiddleware, async (req, res) => {
     res.status(200).json({ message: 'User account, budgets, expenses, and profile picture deleted successfully' });
   } catch (err) {
     console.error('Error deleting user and related data:', err);
-    res.status(500).json({ error: 'Could not delete user account, budgets, expenses, and profile picture' });
+    res.status(500).json({ message: 'Failed to delete user account' });
   }
 });
 

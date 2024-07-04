@@ -51,7 +51,7 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
             tooltip: {
               callbacks: {
                 label: function (tooltipItem) {
-                  return tooltipItem.dataset.label + ': $' + tooltipItem.raw.toFixed(2);
+                  return tooltipItem.dataset.label + ': RS. ' + tooltipItem.raw.toFixed(2);
                 },
               },
             },

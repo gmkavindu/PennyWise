@@ -103,9 +103,11 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
           <tbody className={`divide-y divide-gray-200 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}>
             {filteredExpenses.map((expense) => (
               <tr key={expense._id} className={`text-${theme === 'light' ? 'gray-900' : 'white'}`}>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.amount}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm">RS. {expense.amount}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.category}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">{new Date(expense.date).toLocaleDateString()}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                  {new Date(expense.date).toLocaleDateString('en-GB')}
+                </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.description}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
                   <button

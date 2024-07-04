@@ -23,7 +23,7 @@ const ProgressBar = ({ category, total, current }) => {
           <span className={`font-semibold text-gray-700`}>{`${Math.round(percentage)}%`}</span>
         </div>
       </div>
-      <div className={`text-right mt-1 text-sm ${localStorage.getItem('theme') === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{`$${current} of $${total}`}</div>
+      <div className={`text-right mt-1 text-sm ${localStorage.getItem('theme') === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{`RS.${current} of RS.${total}`}</div>
     </div>
   );
 };

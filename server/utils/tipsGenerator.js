@@ -17,7 +17,7 @@ async function generateFinancialTips(userData) {
 
     // Construct input prompt based on user expenses
     const expenseSummary = expenses.map(expense => `${expense.description} $${expense.amount}`).join('\n');
-    const prompt = `Generate personalized financial tips based on your recent expenses:\n${expenseSummary}\n\nPlease provide structured, practical advice and cost-saving strategies in bullet points or short paragraphs suitable for a web app.`;
+    const prompt = `Generate personalized financial tips based on your recent expenses in Sri Lankan Rupees (RS.):\n${expenseSummary}\n\nPlease provide structured, practical advice and cost-saving strategies in bullet points or short paragraphs suitable for a web app.`;
 
     // Define data payload for the request
     const requestData = {

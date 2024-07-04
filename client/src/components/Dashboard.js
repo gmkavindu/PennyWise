@@ -94,8 +94,8 @@ const Dashboard = () => {
                       }`}
                     >
                       <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-800'}`}>{expense.description}</p>
-                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Amount: ${expense.amount}</p>
-                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Date: {new Date(expense.date).toLocaleDateString()}</p>
+                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Amount: RS. {expense.amount}</p>
+                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Date: {new Date(expense.date).toLocaleDateString('en-GB')}</p>
                     </div>
                   ))
               ) : (

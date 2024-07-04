@@ -46,7 +46,7 @@ const Register = () => {
   }, []);
 
   return (
-    <div className="auth-container bg-gray-100 min-h-screen flex items-center justify-center">
+    <div className="auth-container bg-gray-100 min-h-screen flex items-center justify-center overflow-y-auto">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold mb-4">Register</h2>
         {error && <p className="text-red-500 mb-4">{error}</p>}

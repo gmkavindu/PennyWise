@@ -40,7 +40,8 @@ const PersonalInformation = () => {
         },
       });
       setMessage('Profile updated successfully');
-      setProfilePictureUrl(`${response.data.profilePicture}`);
+      // Update profilePictureUrl state immediately with the new URL
+      setProfilePictureUrl(response.data.profilePicture);
     } catch (error) {
       setMessage('Failed to update profile');
     }
@@ -51,7 +52,7 @@ const PersonalInformation = () => {
   };
 
   return (
-    <div className={`max-w-md mx-auto p-6 rounded-lg shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
+    <div className={`max-w-md mx-auto p-6 rounded-lg shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} -mt-2`}>
       <h2 className="text-2xl font-semibold mb-4 text-center">Personal Information</h2>
       {message && <p className="mb-4 p-3 rounded text-center text-green-800 bg-green-200">{message}</p>}
       <form onSubmit={handleSubmit}>
@@ -73,7 +74,7 @@ const PersonalInformation = () => {
           <div className="mb-4">
             <label className="block font-bold mb-1">Current Profile Picture:</label>
             <img
-              src={profilePictureUrl.startsWith('http') ? profilePictureUrl : `http://localhost:5000${profilePictureUrl}`}
+              src={profilePictureUrl}
               alt="Profile"
               className="w-36 h-36 rounded-full"
             />

@@ -64,7 +64,9 @@ const Navbar = () => {
     <div className={`fixed top-0 left-0 right-0 z-50 shadow-md ${getBackgroundColor()} transition-all duration-300`}>
       <div className="flex justify-between items-center px-4 py-2">
         <div className="flex items-center">
-          <img src={logoName} alt="Logo" className="h-16 md:h-20 w-auto mr-4" />
+          <Link to="/dashboard">
+            <img src={logoName} alt="Logo" className="h-16 md:h-20 w-auto mr-4" />
+          </Link>
         </div>
 
         {/* Default Desktop Menu */}

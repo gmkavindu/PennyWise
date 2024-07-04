@@ -4,7 +4,9 @@
   "description": "",
   "main": "playground-1.mongodb.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd ../client && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
