@@ -31,6 +31,50 @@ body {
   @apply flex items-center justify-center w-10 h-10 bg-black text-white rounded-full hover:bg-gray-800 transition-colors duration-200 border-2 border-white;
 }
 
+.react-confirm-alert-overlay {
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  z-index: 1000; /* Ensure it overlays other content */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.react-confirm-alert-body {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px; /* Adjust width as needed */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+}
+
+.react-confirm-alert-button-group {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.react-confirm-alert-button {
+  cursor: pointer;
+  background-color: #4caf50; /* Green button background */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-left: 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.react-confirm-alert-button:hover {
+  background-color: #45a049; /* Darker green on hover */
+}
+
+.react-confirm-alert-button.red {
+  background-color: #f44336; /* Red button background */
+}
+
+.react-confirm-alert-button.red:hover {
+  background-color: #e53935; /* Darker red on hover */
+}
 
 /* Tailwind CSS integration */
 @tailwind base;

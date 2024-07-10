@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaPlus } from 'react-icons/fa'; // Importing icons from react-icons/fa
 import { RiPencilLine, RiDeleteBinLine } from 'react-icons/ri'; // Importing icons from react-icons/ri
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +27,24 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
 
   const handleDateChange = (e) => {
     setFilterDate(e.target.value);
+  };
+
+  const handleDeleteClick = (id) => {
+    confirmAlert({
+      title: 'Confirm to delete',
+      message: 'Are you sure you want to delete this expense?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: () => onDelete(id),
+          className: 'react-confirm-alert-button' // Use the green button style
+        },
+        {
+          label: 'No',
+          className: 'react-confirm-alert-button red' // Use the red button style
+        }
+      ]
+    });
   };
 
   // Extracting unique categories from expenses
@@ -101,13 +121,11 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
             </tr>
           </thead>
           <tbody className={`divide-y divide-gray-200 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}>
-            {filteredExpenses.map((expense) => (
-              <tr key={expense._id} className={`text-${theme === 'light' ? 'gray-900' : 'white'}`}>
+            {filteredExpenses.map((expense, index) => (
+              <tr key={expense._id} className={`text-${theme === 'light' ? 'gray-900' : 'white'} transition-all duration-300 ${index % 2 === 0 ? 'bg-opacity-50' : 'bg-opacity-75'} hover:${theme === 'light' ? 'bg-gray-200' : 'bg-gray-600'}`}>
                 <td className="px-4 py-3 whitespace-nowrap text-sm">RS. {expense.amount}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.category}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                  {new Date(expense.date).toLocaleDateString('en-GB')}
-                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm">{new Date(expense.date).toLocaleDateString('en-GB')}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.description}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
                   <button
@@ -117,7 +135,7 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
                     <RiPencilLine />
                   </button>
                   <button
-                    onClick={() => onDelete(expense._id)}
+                    onClick={() => handleDeleteClick(expense._id)}
                     className={`p-2 ${theme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-white'} rounded-full hover:bg-${theme === 'light' ? 'red-600' : 'red-700'}`}
                   >
                     <RiDeleteBinLine />

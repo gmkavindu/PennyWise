@@ -8,7 +8,7 @@ const User = require('../models/User');
 const Budget = require('../models/Budget');
 const Expense = require('../models/Expense');
 const router = express.Router();
-const authMiddleware = require('../middleware/auth');
+const authMiddleware = require('./auth');
 
 // Define the profile pictures directory
 const PROFILE_PICTURES_DIR = path.join(__dirname, '../uploads/profiles');

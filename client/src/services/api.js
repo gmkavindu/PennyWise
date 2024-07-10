@@ -52,7 +52,11 @@ export const fetchFinancialTips = async () => {
     const response = await axios.get(`${API_URL}/financial-tips`, {
       headers: { 'x-auth-token': localStorage.getItem('token') },
     });
-    return response.data.tips; // Assuming backend sends { tips: 'Financial tip message' }
+    if (response.data && response.data.tips) {
+      return response.data.tips;
+    } else {
+      throw new Error('Invalid response format');
+    }
   } catch (error) {
     console.error('Error fetching financial tips:', error);
     throw error;

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import Chart from 'chart.js/auto'; // Import Chart.js without LinearScale
+import Chart from 'chart.js/auto';
 
 const BudgetChart = ({ budgets, expenses, theme }) => {
   const chartRef = useRef(null);
@@ -29,7 +29,6 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
               borderColor: theme === 'light' ? 'rgba(54, 162, 235, 1)' : 'rgba(33, 150, 243, 1)',
               borderWidth: 1,
               data: budgetLimits,
-              order: 1, // Ensure budget bars are behind expense bars
             },
             {
               label: 'Total Expenses',
@@ -37,12 +36,11 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
               borderColor: theme === 'light' ? 'rgba(255, 99, 132, 1)' : 'rgba(255, 64, 129, 1)',
               borderWidth: 1,
               data: totalExpenses,
-              order: 2, // Ensure expense bars are in front of budget bars
             },
           ],
         },
         options: {
-          indexAxis: 'y',
+          indexAxis: 'y', // Ensure horizontal bar chart
           plugins: {
             legend: {
               display: true,
@@ -58,10 +56,15 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
           },
           scales: {
             x: {
-              display: false, // Hide x-axis labels and grid lines
+              title: {
+                display: true,
+                text: 'Amount',
+              },
+              ticks: {
+                beginAtZero: true,
+              },
             },
             y: {
-              stacked: true,
               title: {
                 display: true,
                 text: 'Category',

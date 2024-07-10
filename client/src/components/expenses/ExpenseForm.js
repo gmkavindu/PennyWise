@@ -10,6 +10,7 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
   const [expenses, setExpenses] = useState([]);
   const [alertMessage, setAlertMessage] = useState('');
   const [theme, setTheme] = useState('light');
+  const [loadingBudgets, setLoadingBudgets] = useState(true); // State to manage loading status
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -29,6 +30,8 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
         setBudgets(response.data);
       } catch (error) {
         console.error('Error fetching budgets:', error);
+      } finally {
+        setLoadingBudgets(false); // Set loading state to false after fetching budgets (whether success or error)
       }
     };
 
@@ -92,6 +95,8 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
       const action = expenseToEdit ? 'Editing' : 'Adding';
       setAlertMessage(`${action} this expense exceeds the budget limit for ${category}`);
       return;
+    } else {
+      setAlertMessage(''); // Clear alert message when no error
     }
 
     const expense = {
@@ -113,7 +118,6 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
     setDate('');
     setDescription('');
     setExpenses([]);
-    setAlertMessage('');
   };
 
   const handleCancel = () => {
@@ -136,19 +140,25 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
       </div>
       <div className="mb-4">
         <label className="block text-sm font-medium">Category</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className={`mt-1 p-2 block w-full border rounded focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 border-gray-300 bg-white' : 'focus:ring-blue-500 border-gray-700 bg-gray-700 text-white'}`}
-          required
-        >
-          <option value="">Select a category</option>
-          {budgets.map((budget) => (
-            <option key={budget._id} value={budget.category}>
-              {budget.category}
-            </option>
-          ))}
-        </select>
+        {!loadingBudgets && budgets.length > 0 ? (
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className={`mt-1 p-2 block w-full border rounded focus:outline-none focus:ring-2 ${theme === 'light' ? 'focus:ring-blue-500 border-gray-300 bg-white' : 'focus:ring-blue-500 border-gray-700 bg-gray-700 text-white'}`}
+            required
+          >
+            <option value="">Select a category</option>
+            {budgets.map((budget) => (
+              <option key={budget._id} value={budget.category}>
+                {budget.category}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <div className={`mt-1 p-2 block w-full border rounded ${theme === 'light' ? 'bg-gray-100 text-gray-500' : 'bg-gray-800 text-gray-400'}`}>
+            {loadingBudgets ? 'Loading budgets...' : 'No budgets found. Please create a budget first.'}
+          </div>
+        )}
       </div>
       <div className="mb-4">
         <label className="block text-sm font-medium">Date</label>

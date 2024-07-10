@@ -47,6 +47,19 @@ const BudgetManager = () => {
     fetchExpensesData();
   }, []);
 
+  useEffect(() => {
+    const handleClick = () => {
+      setDecreaseMessage('');
+      setDeleteMessage('');
+    };
+
+    document.addEventListener('click', handleClick);
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+    };
+  }, []);
+
   const calculateTotalExpensesForCategory = (category) => {
     return expenses.reduce((total, exp) => {
       if (exp.category === category) {
@@ -115,10 +128,10 @@ const BudgetManager = () => {
   };
 
   return (
-    <div className={`${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
+    <div className={`${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} min-h-screen transition-colors duration-500 ease-in-out`}>
       <Navbar theme={theme} />
       <div className="max-w-4xl mx-auto p-6 border rounded-lg shadow-md mt-32">
-        <h2 className="text-center text-2xl mb-6">Budget Manager</h2>
+        <h2 className="text-center text-2xl font-bold mb-6 animate-fadeIn">Budget Manager</h2>
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md mb-4"
           onClick={() => setShowAddPopup(true)}
@@ -146,9 +159,11 @@ const BudgetManager = () => {
           </div>
         )}
 
-        {decreaseMessage && <div className="text-red-600">{decreaseMessage}</div>}
+        {decreaseMessage && <div className="text-red-600 mb-4">{decreaseMessage}</div>}
+        {deleteMessage && <div className="text-red-600 mb-4">{deleteMessage}</div>}
+
         <BudgetList budgets={budgets} onEdit={handleEditBudget} onDelete={handleDeleteBudget} theme={theme} />
-        {deleteMessage && <div className="text-red-600">{deleteMessage}</div>}
+
         <BudgetChart budgets={budgets} expenses={expenses} theme={theme} />
       </div>
     </div>

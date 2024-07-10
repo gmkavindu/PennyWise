@@ -1,6 +1,6 @@
 const { generateFinancialTips } = require('../utils/tipsGenerator');
-const Expense = require('../models/Expense'); // Import your Expense model
-const User = require('../models/User'); // Import your User model
+const Expense = require('../models/Expense');
+const User = require('../models/User');
 
 // Define getFinancialTips function
 const getFinancialTips = async (req, res) => {
@@ -34,7 +34,7 @@ const getFinancialTips = async (req, res) => {
     res.json({ tips });
   } catch (err) {
     console.error('Error generating financial tips:', err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 

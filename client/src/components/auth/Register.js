@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import validator from 'validator';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -9,16 +10,40 @@ const Register = () => {
     password: ''
   });
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false); // Track form submission state
   const navigate = useNavigate();
 
   const { name, email, password } = formData;
 
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!validator.isStrongPassword(password, { minSymbols: 0 })) {
+      return "Password must include at least one uppercase letter, one lowercase letter, and one number.";
+    }
+    return '';
+  };
+
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    if (e.target.name === 'password') {
+      const errorMsg = validatePassword(e.target.value);
+      setPasswordError(errorMsg);
+    }
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitted(true); // Set form as submitted to show validation errors
+    const errorMsg = validatePassword(password);
+    if (errorMsg) {
+      setPasswordError(errorMsg);
+      return;
+    }
+
     try {
       await axios.post('/api/auth/register', formData);
       navigate('/login');
@@ -31,11 +56,10 @@ const Register = () => {
     const theme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', theme);
 
-    // Logic after logout and refresh
     const handleLogoutAndRefresh = () => {
-      localStorage.removeItem('token'); // Clear token from localStorage
-      localStorage.setItem('theme', 'light'); // Reset theme to light
-      document.documentElement.setAttribute('data-theme', 'light'); // Update theme on the document
+      localStorage.removeItem('token');
+      localStorage.setItem('theme', 'light');
+      document.documentElement.setAttribute('data-theme', 'light');
     };
 
     window.addEventListener('beforeunload', handleLogoutAndRefresh);
@@ -64,6 +88,7 @@ const Register = () => {
               required
               className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
+            {isSubmitted && !name && <p className="text-red-500 mt-2">Name is required.</p>}
           </div>
           <div>
             <label htmlFor="email" className="block font-medium text-gray-700">
@@ -78,6 +103,8 @@ const Register = () => {
               required
               className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
+            {isSubmitted && !email && <p className="text-red-500 mt-2">Email is required.</p>}
+            {isSubmitted && email && !validator.isEmail(email) && <p className="text-red-500 mt-2">Invalid email format.</p>}
           </div>
           <div>
             <label htmlFor="password" className="block font-medium text-gray-700">
@@ -92,6 +119,7 @@ const Register = () => {
               required
               className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
+            {isSubmitted && passwordError && <p className="text-red-500 mt-2">{passwordError}</p>}
           </div>
           <button
             type="submit"

@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Budget = require('../models/Budget');
 const Expense = require('../models/Expense');
 const authMiddleware = require('../middleware/auth');
+const validator = require('validator');
 
 const { upload, PROFILE_PICTURES_DIR } = require('../middleware/upload');
 const router = express.Router();
@@ -24,6 +25,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
+    if (!validator.isLength(password, { min: 8 })) {
+      return res.status(400).json({ msg: 'Password must be at least 8 characters long' });
+    }
+
+    if (!validator.isStrongPassword(password, { minSymbols: 0 })) {
+      return res.status(400).json({ msg: 'Password must include at least one uppercase letter, one lowercase letter, and one number' });
+    }
+
     user = new User({ name, email, password });
 
     const salt = await bcrypt.genSalt(10);
@@ -31,14 +40,12 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Create payload for JWT
     const payload = {
       user: {
         id: user.id,
       },
     };
 
-    // Sign JWT
     jwt.sign(
       payload,
       process.env.JWT_SECRET,

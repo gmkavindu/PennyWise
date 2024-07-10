@@ -96,19 +96,30 @@ exports.updateExpense = async (req, res) => {
 // Delete an expense
 exports.deleteExpense = async (req, res) => {
     try {
-        let expense = await Expense.findById(req.params.id);
+        const expense = await Expense.findById(req.params.id);
 
-        if (!expense) return res.status(404).json({ msg: 'Expense not found' });
+        if (!expense) {
+            return res.status(404).json({ msg: 'Expense not found' });
+        }
 
         // Ensure user owns expense
         if (expense.user.toString() !== req.user.id) {
             return res.status(401).json({ msg: 'User not authorized' });
         }
 
+        // Delete the expense
         await Expense.findByIdAndDelete(req.params.id);
 
-        // Update user's last expenses update timestamp
-        await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date() });
+        // Remove expense ID from user's expenses array
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { $pull: { expenses: req.params.id } },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
 
         res.json({ msg: 'Expense removed' });
     } catch (err) {

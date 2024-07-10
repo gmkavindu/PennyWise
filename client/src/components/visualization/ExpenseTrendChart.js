@@ -49,6 +49,19 @@ const ExpenseTrendChart = () => {
         beginAtZero: true,
         ticks: {
           color: theme === 'light' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)', // Adjust tick color based on theme
+          callback: function (value) {
+            return `RS. ${value}`; // Add currency symbol in front of the amount
+          },
+        },
+      },
+    },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem) => {
+            const value = tooltipItem.raw || 0;
+            return `RS. ${value}`;
+          },
         },
       },
     },

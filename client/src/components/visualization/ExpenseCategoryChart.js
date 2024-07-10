@@ -23,12 +23,11 @@ const ExpenseCategoryChart = () => {
               label: 'Expenses by Category',
               data: Object.values(categories),
               backgroundColor: [
-                '#FF6384',
-                '#36A2EB',
-                '#FFCE56',
-                '#4BC0C0',
-                '#9966FF',
-                '#FF9F40'
+                '#36A2EB', '#FFCE56', '#E74C3C', '#9966FF',
+                '#7F8C8D', '#C70039', '#900C3F', '#581845',
+                '#2E86C1', '#17A589', '#E74C3C', '#9B59B6',
+                '#1ABC9C', '#2ECC71', '#3498DB', '#E67E22', 
+                '#95A5A6', '#D35400', '#F71233', '#F1C40F', 
               ],
             },
           ],
@@ -63,6 +62,15 @@ const ExpenseCategoryChart = () => {
                 legend: {
                   labels: {
                     color: localStorage.getItem('theme') === 'dark' ? '#fff' : '#333',
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (tooltipItem) => {
+                      const label = tooltipItem.label || '';
+                      const value = tooltipItem.raw || 0;
+                      return `${label}: RS. ${value}`;
+                    },
                   },
                 },
               },

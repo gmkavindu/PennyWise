@@ -52,9 +52,13 @@ const PersonalInformation = () => {
   };
 
   return (
-    <div className={`max-w-md mx-auto p-6 rounded-lg shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} -mt-2`}>
+    <div className={`max-w-md mx-auto p-6 rounded-lg shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
       <h2 className="text-2xl font-semibold mb-4 text-center">Personal Information</h2>
-      {message && <p className="mb-4 p-3 rounded text-center text-green-800 bg-green-200">{message}</p>}
+      {message && (
+        <p className="absolute top-9 left-1/2 transform -translate-x-1/2 p-3 rounded text-center text-green-800 bg-green-200 w-11/12">
+          {message}
+        </p>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block font-bold mb-1">Name:</label>

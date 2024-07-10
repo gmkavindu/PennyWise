@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
+import { useNavigate } from 'react-router-dom';
+import { confirmAlert } from 'react-confirm-alert'; // Import confirmAlert
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import stylesheet
 import AccountSettings from './AccountSettings';
 import PersonalInformation from './PersonalInformation';
 import ThemeAppearance from './ThemeAppearance';
-import Navbar from '../Navbar'; // Import your Navbar component
+import Navbar from '../Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCog, faUser, faPalette, faTrashAlt } from '@fortawesome/free-solid-svg-icons'; // Import FontAwesome icons
+import { faUserCog, faUser, faPalette, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
 const SettingsPage = () => {
   const [theme, setTheme] = useState('light');
   const [modalContent, setModalContent] = useState(null);
   const modalRef = useRef(null);
   const isThemeAppearanceModal = useRef(false);
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -57,31 +59,44 @@ const SettingsPage = () => {
   };
 
   const handleDeleteAccount = async () => {
-    try {
-      const response = await fetch('/api/auth/delete-account', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': localStorage.getItem('token'), // Assuming token is stored in localStorage
+    confirmAlert({
+      title: 'Confirm to delete',
+      message: 'Are you sure you want to delete your account?',
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: async () => {
+            try {
+              const response = await fetch('/api/auth/delete-account', {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-auth-token': localStorage.getItem('token'),
+                },
+              });
+              const data = await response.json();
+              console.log(data); // Log success message or handle response as needed
+
+              // Remove authentication details from localStorage
+              localStorage.removeItem('token');
+              localStorage.removeItem('theme');
+
+              // Navigate to root after successful deletion
+              navigate('/');
+
+            } catch (error) {
+              console.error('Error deleting account:', error);
+              // Handle error response or display error to user
+            }
+          },
+          className: 'react-confirm-alert-button' // Green button style
         },
-      });
-      const data = await response.json();
-      console.log(data); // Log success message or handle response as needed
-
-      // Remove authentication details from localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('theme');
-
-      // Reload the page
-      window.location.reload();
-
-      // Add delay before navigating to root
-      navigate('/');
-
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      // Handle error response or display error to user
-    }
+        {
+          label: 'No',
+          className: 'react-confirm-alert-button red' // Red button style
+        }
+      ]
+    });
   };
 
   return (

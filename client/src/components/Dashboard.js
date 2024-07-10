@@ -4,6 +4,7 @@ import ExpenseCategoryChart from './visualization/ExpenseCategoryChart';
 import ProgressBar from './ProgressBar';
 import Navbar from './Navbar';
 import axios from 'axios';
+import { FaSpinner } from 'react-icons/fa';
 
 const Dashboard = () => {
   const [name, setName] = useState('');
@@ -61,22 +62,27 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <p className="text-center mt-8">Loading...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <FaSpinner className="animate-spin text-4xl text-gray-600 mb-4" />
+        <p className="text-lg text-gray-600">Loading...</p>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-32 mb-20"> {/* Increased margin top to mt-32 */}
+      <div className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-32 mb-20 transition-all duration-500 ease-in-out transform-gpu hover:scale-105">
         <div className="flex items-center mb-4">
           {profilePicture && (
             <img
-              src={profilePicture.startsWith('http') ? profilePicture : `http://localhost:5000${profilePicture}`}
+              src={profilePicture.startsWith('http') ? profilePicture : `${window.location.origin}${profilePicture}`}
               alt="Profile"
-              className="w-12 h-12 rounded-full mr-4 border-2 border-gray-300"
+              className="w-16 h-16 rounded-full mr-4 border-2 border-gray-300 transition-all duration-500 ease-in-out transform-gpu hover:scale-110"
             />
           )}
-          <h1 className="text-3xl font-bold">{`Welcome, ${name}!`}</h1>
+          <h1 className="text-3xl font-bold animate-fadeIn">{`Welcome, ${name}!`}</h1>
         </div>
         <div className="flex flex-col md:flex-row mb-10">
           <div className="md:w-1/2 pr-4">
@@ -89,13 +95,13 @@ const Dashboard = () => {
                   .map((expense) => (
                     <div
                       key={expense._id}
-                      className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 ${
+                      className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 transition-all duration-500 ease-in-out transform-gpu hover:scale-105 ${
                         localStorage.getItem('theme') === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
                       }`}
                     >
-                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-800'}`}>{expense.description}</p>
-                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Amount: RS. {expense.amount}</p>
-                      <p className={`${localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-700'}`}>Date: {new Date(expense.date).toLocaleDateString('en-GB')}</p>
+                      <p className="text-lg font-medium">{expense.description}</p>
+                      <p className="text-md">Amount: RS. {expense.amount}</p>
+                      <p className="text-sm">Date: {new Date(expense.date).toLocaleDateString()}</p>
                     </div>
                   ))
               ) : (
