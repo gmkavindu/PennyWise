@@ -6,7 +6,7 @@ import { Spinner, Alert, Container, Button } from 'react-bootstrap';
 const FinancialTips = () => {
   const [tips, setTips] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState('Loading tips...');
+  const [loadingMessage, setLoadingMessage] = useState('Please wait, we are fetching your personalized financial tips...');
   const [error, setError] = useState('');
   const [theme, setTheme] = useState('light');
   const [reloadOnFirstError, setReloadOnFirstError] = useState(false); // State to trigger reload on first error
@@ -106,6 +106,7 @@ const FinancialTips = () => {
         <div className="text-center mt-4">
           <Spinner animation="border" variant="primary" />
           <p>{loadingMessage}</p>
+          <p className="text-muted">This might take a few moments.</p>
         </div>
       );
     }

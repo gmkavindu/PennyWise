@@ -8,14 +8,20 @@ body {
 
 /* Root variables for theme */
 :root {
-  --background-color: #ffffff; /* Light background */
+  --background-color: #ffffff; /* Default light background */
+  --text-color: #000000; /* Default text color */
+}
+
+/* Light theme variables */
+[data-theme='light'] {
+  --background-color: #ffffff;
   --text-color: #000000;
 }
 
 /* Dark theme variables */
 [data-theme='dark'] {
-  --background-color: #1f2937; /* Dark background */
-  --text-color: #ffffff; /* Light text */
+  --background-color: #1f2937;
+  --text-color: #ffffff;
 }
 
 /* Apply theme variables to body */
@@ -23,14 +29,18 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
 }
+
+/* Navigation button styles */
 .btn-nav {
   @apply flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700 transition-colors duration-200;
 }
 
+/* Circular navigation button styles */
 .circle-btn-nav {
   @apply flex items-center justify-center w-10 h-10 bg-black text-white rounded-full hover:bg-gray-800 transition-colors duration-200 border-2 border-white;
 }
 
+/* Styles for React Confirm Alert overlay */
 .react-confirm-alert-overlay {
   background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
   z-index: 1000; /* Ensure it overlays other content */
@@ -39,6 +49,7 @@ body {
   align-items: center;
 }
 
+/* Styles for React Confirm Alert body */
 .react-confirm-alert-body {
   background-color: white;
   padding: 20px;
@@ -47,12 +58,14 @@ body {
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
 }
 
+/* Styles for React Confirm Alert button group */
 .react-confirm-alert-button-group {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
 }
 
+/* Styles for React Confirm Alert buttons */
 .react-confirm-alert-button {
   cursor: pointer;
   background-color: #4caf50; /* Green button background */
@@ -64,14 +77,17 @@ body {
   transition: background-color 0.3s ease;
 }
 
+/* Hover effect for React Confirm Alert buttons */
 .react-confirm-alert-button:hover {
   background-color: #45a049; /* Darker green on hover */
 }
 
+/* Red variant of React Confirm Alert button */
 .react-confirm-alert-button.red {
   background-color: #f44336; /* Red button background */
 }
 
+/* Hover effect for red variant of React Confirm Alert button */
 .react-confirm-alert-button.red:hover {
   background-color: #e53935; /* Darker red on hover */
 }

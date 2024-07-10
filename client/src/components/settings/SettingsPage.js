@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { confirmAlert } from 'react-confirm-alert'; // Import confirmAlert
-import 'react-confirm-alert/src/react-confirm-alert.css'; // Import stylesheet
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import AccountSettings from './AccountSettings';
 import PersonalInformation from './PersonalInformation';
 import ThemeAppearance from './ThemeAppearance';
 import Navbar from '../Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCog, faUser, faPalette, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUserCog, faUser, faPalette, faTrashAlt, faEnvelope, faGlobe, faInfoCircle  } from '@fortawesome/free-solid-svg-icons';
 
 const SettingsPage = () => {
   const [theme, setTheme] = useState('light');
@@ -45,7 +45,8 @@ const SettingsPage = () => {
   const closeModal = () => {
     setModalContent(null);
     if (isThemeAppearanceModal.current) {
-      window.location.reload();
+      // Optionally handle theme change without reloading
+      // setTheme(theme); // You might want to update theme state here
     }
   };
 
@@ -80,6 +81,7 @@ const SettingsPage = () => {
               // Remove authentication details from localStorage
               localStorage.removeItem('token');
               localStorage.removeItem('theme');
+              window.location.reload();
 
               // Navigate to root after successful deletion
               navigate('/');
@@ -141,6 +143,12 @@ const SettingsPage = () => {
                 Delete Account
               </button>
             </li>
+            <li className="mt-4">
+              <div className="flex items-center text-sm text-gray-500">
+                <FontAwesomeIcon icon={faInfoCircle} className="mr-1" />
+                Version: v1.0.0
+              </div>
+            </li>
           </ul>
         </nav>
         {modalContent && (
@@ -162,6 +170,20 @@ const SettingsPage = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Contact Details Section */}
+      <div className="absolute bottom-0 left-0 right-0 py-4 bg-gray-900 text-white text-center">
+        <div className="flex flex-col items-center justify-center">
+          <p className="mb-2">
+            <span className="mr-2">Contact:</span>
+            <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+            <a href="mailto:gmkavindu@gmail.com" className="hover:text-blue-400">gmkavindu@gmail.com </a>
+            <FontAwesomeIcon icon={faGlobe} className="mr-2" />
+            <a href="https://gmkavindu.me" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">gmkavindu.me</a>
+          </p>
+          <p className="text-xs">Version: v1.0.0</p>
+        </div>
       </div>
     </div>
   );

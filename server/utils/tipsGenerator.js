@@ -1,10 +1,11 @@
-require('dotenv').config();
+require('dotenv').config(); // Load environment variables from a .env file
 const axios = require('axios');
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
-const apiKey = process.env.API_KEY;
-const endpoint = process.env.ENDPOINT;
-const model = process.env.MODEL
+
+const apiKey = process.env.API_KEY; // API key from environment variable
+const endpoint = process.env.ENDPOINT; // Endpoint URL from environment variable
+const model = process.env.MODEL; // Model identifier from environment variable
 
 async function generateFinancialTips(userData) {
   try {
@@ -17,7 +18,7 @@ async function generateFinancialTips(userData) {
     // Fetch expenses from MongoDB based on user ID
     const expenses = await Expense.find({ user: userData.user });
     
-    // Fetch budget from MongoDB based on user ID
+    // Fetch budgets from MongoDB based on user ID
     const budgets = await Budget.find({ user: userData.user });
 
     // Map budgets to categories
@@ -36,7 +37,7 @@ async function generateFinancialTips(userData) {
 
     // Define data payload for the request
     const requestData = {
-      model: model, // Update to your preferred model if different
+      model: model, // Specify the model for generating tips
       messages: [
         { role: 'system', content: 'You are a helpful assistant. The user is seeking practical advice to improve their financial management based on recent spending patterns and budget limits.' },
         { role: 'user', content: prompt }
@@ -50,7 +51,7 @@ async function generateFinancialTips(userData) {
     const { data } = response;
     if (data.choices && data.choices.length > 0) {
       const financialTip = data.choices[0].message.content.trim();
-      return financialTip;
+      return financialTip; // Return the generated financial tip
     } else {
       throw new Error('No response or choices found from OpenAI API');
     }

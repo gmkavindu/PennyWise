@@ -22,7 +22,7 @@ const UserSchema = new mongoose.Schema({
     type: Date,
   },
   lastGeneratedTips: {
-    type: [String], // Array of strings for the tips
+    type: [String],
   },
   tipsGeneratedAt: {
     type: Date,
@@ -32,7 +32,7 @@ const UserSchema = new mongoose.Schema({
     default: 'light',
   },
   profilePicture: {
-    type: String, // Path to the profile picture
+    type: String,
   },
   budgets: [
     {

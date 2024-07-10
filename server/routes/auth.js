@@ -80,14 +80,12 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
 
-    // Create payload for JWT
     const payload = {
       user: {
         id: user.id,
       },
     };
 
-    // Sign JWT
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
@@ -141,7 +139,6 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
     userFields.password = await bcrypt.hash(password, salt);
   }
   if (req.file) {
-    // Save file path to user profilePicture field
     userFields.profilePicture = `/uploads/profiles/${req.file.filename}`;
   }
 
@@ -152,9 +149,8 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    // Check if there's an existing profile picture and delete it if updating
+    // Delete old profile picture file if updating
     if (user.profilePicture && req.file) {
-      // Delete old profile picture file
       fs.unlinkSync(path.join(PROFILE_PICTURES_DIR, path.basename(user.profilePicture)));
     }
 
@@ -169,7 +165,7 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
       user.profilePicture = `${req.protocol}://${req.get('host')}${user.profilePicture}`;
     }
 
-    res.json(user); // Send back updated user object with new profile picture URL
+    res.json(user);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

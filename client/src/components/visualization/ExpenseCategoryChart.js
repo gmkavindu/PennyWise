@@ -1,85 +1,104 @@
-import React, { useEffect, useState } from 'react';
-import { Pie } from 'react-chartjs-2';
+import React, { useEffect, useRef } from 'react';
+import * as echarts from 'echarts';
 import { fetchExpenses } from '../../services/api';
 
 const ExpenseCategoryChart = () => {
-  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+  const chartRef = useRef(null);
 
   useEffect(() => {
-    const getData = async () => {
+    const getDataAndRenderChart = async () => {
       try {
         const expenses = await fetchExpenses();
-        if (!expenses || expenses.length === 0) throw new Error('No expenses fetched');
+        if (!expenses || expenses.length === 0) {
+          throw new Error('No expenses fetched');
+        }
 
         const categories = expenses.reduce((acc, expense) => {
           acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
           return acc;
         }, {});
 
-        setChartData({
-          labels: Object.keys(categories),
-          datasets: [
-            {
-              label: 'Expenses by Category',
-              data: Object.values(categories),
-              backgroundColor: [
-                '#36A2EB', '#FFCE56', '#E74C3C', '#9966FF',
-                '#7F8C8D', '#C70039', '#900C3F', '#581845',
-                '#2E86C1', '#17A589', '#E74C3C', '#9B59B6',
-                '#1ABC9C', '#2ECC71', '#3498DB', '#E67E22', 
-                '#95A5A6', '#D35400', '#F71233', '#F1C40F', 
-              ],
-            },
-          ],
-        });
+        const chartData = Object.keys(categories).map((category) => ({
+          value: categories[category],
+          name: category,
+        }));
+
+        renderChart(chartData);
       } catch (error) {
         console.error('Error fetching or processing data:', error);
       }
     };
 
-    getData();
+    getDataAndRenderChart();
   }, []);
 
-  // Determine background color and text color based on theme
-  const getBackgroundColor = () => {
-    return localStorage.getItem('theme') === 'dark' ? 'bg-gray-800' : 'bg-white';
-  };
+  const renderChart = (data) => {
+    const myChart = echarts.init(chartRef.current);
 
-  const getTextColor = () => {
-    return localStorage.getItem('theme') === 'dark' ? 'text-white' : 'text-gray-800';
+    const option = {
+      backgroundColor: localStorage.getItem('theme') === 'dark' ? '#1f2937' : '#ffffff', // Background color based on theme
+      color: localStorage.getItem('theme') === 'dark' ? ['#36A2EB', '#FFCE56', '#E74C3C', '#9966FF', '#7F8C8D'] : ['#2E86C1', '#17A589', '#E74C3C', '#9B59B6', '#1ABC9C'], // Colors based on theme
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b}: RS. {c}', // Tooltip label format
+        textStyle: {
+          color: localStorage.getItem('theme') === 'dark' ? '#ffffff' : '#333333', // Tooltip text color based on theme
+        },
+        backgroundColor: localStorage.getItem('theme') === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)', // Tooltip background color based on theme
+      },
+      legend: {
+        top: '5%',
+        left: 'center',
+        textStyle: {
+          color: localStorage.getItem('theme') === 'dark' ? '#ffffff' : '#333333', // Legend text color based on theme
+        },
+      },
+      series: [
+        {
+          name: 'Expense Categories',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          avoidLabelOverlap: false,
+          label: {
+            show: true,
+            position: 'outside', // Adjust label position as needed
+            textStyle: {
+              color: localStorage.getItem('theme') === 'dark' ? '#ffffff' : '#333333', // Label text color based on theme
+            },
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 14,
+              fontWeight: 'bold',
+              color: localStorage.getItem('theme') === 'dark' ? '#ffffff' : '#333333', // Emphasis label text color based on theme
+            },
+          },
+          data: data,
+        },
+      ],
+    };
+
+    myChart.setOption(option);
+
+    // Resize chart with window resize
+    window.addEventListener('resize', () => {
+      myChart.resize();
+    });
   };
 
   return (
-    <div className={`shadow-md rounded-lg p-4 ${getBackgroundColor()} ${getTextColor()}`}>
-      <div className="h-96"> {/* Increase the height for larger chart */}
-        {chartData.labels.length > 0 ? (
-          <Pie
-            data={chartData}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  labels: {
-                    color: localStorage.getItem('theme') === 'dark' ? '#fff' : '#333',
-                  },
-                },
-                tooltip: {
-                  callbacks: {
-                    label: (tooltipItem) => {
-                      const label = tooltipItem.label || '';
-                      const value = tooltipItem.raw || 0;
-                      return `${label}: RS. ${value}`;
-                    },
-                  },
-                },
-              },
-            }}
-          />
-        ) : (
-          <p className="text-center text-gray-500 italic">No data available</p>
-        )}
-      </div>
+    <div
+      className="shadow-md rounded-lg p-4"
+      style={{
+        width: '100%',
+        maxWidth: '600px', // Adjust maximum width as needed for responsiveness
+        margin: '0 auto', // Center align horizontally
+        backgroundColor: localStorage.getItem('theme') === 'dark' ? '#1f2937' : '#ffffff', // Adjust background color based on theme
+        color: localStorage.getItem('theme') === 'dark' ? '#ffffff' : '#333333', // Adjust text color based on theme
+      }}
+    >
+      <div ref={chartRef} style={{ width: '100%', height: '500px' }} />
     </div>
   );
 };

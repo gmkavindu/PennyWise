@@ -4,7 +4,11 @@ import ExpenseCategoryChart from './visualization/ExpenseCategoryChart';
 import ProgressBar from './ProgressBar';
 import Navbar from './Navbar';
 import axios from 'axios';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaChartPie, FaClipboardList } from 'react-icons/fa';
+import { IoIosPricetags } from "react-icons/io";
+import { GrMoney } from "react-icons/gr";
+import { MdDateRange } from "react-icons/md";
+import { FaBarsProgress } from "react-icons/fa6";
 
 const Dashboard = () => {
   const [name, setName] = useState('');
@@ -73,20 +77,23 @@ const Dashboard = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-32 mb-20 transition-all duration-500 ease-in-out transform-gpu hover:scale-105">
+      <div className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-32 mb-20">
         <div className="flex items-center mb-4">
           {profilePicture && (
             <img
               src={profilePicture.startsWith('http') ? profilePicture : `${window.location.origin}${profilePicture}`}
               alt="Profile"
-              className="w-16 h-16 rounded-full mr-4 border-2 border-gray-300 transition-all duration-500 ease-in-out transform-gpu hover:scale-110"
+              className="w-16 h-16 rounded-full mr-4 border-2 border-gray-300 transition-all duration-500 ease-in-out transform hover:scale-110"
             />
           )}
-          <h1 className="text-3xl font-bold animate-fadeIn">{`Welcome, ${name}!`}</h1>
+          <h1 className="text-3xl font-bold animate-fadeIn text-blue-500">{`Welcome, ${name}!`}</h1>
         </div>
         <div className="flex flex-col md:flex-row mb-10">
           <div className="md:w-1/2 pr-4">
-            <h2 className="text-2xl font-semibold mb-6">Latest Expenses</h2>
+            <h2 className="text-2xl font-semibold mb-6 flex items-center">
+              <FaClipboardList className="mr-2 text-blue-500" />
+              Latest Expenses
+            </h2>
             <div className="flex flex-col items-center">
               {expenses.length > 0 ? (
                 expenses
@@ -95,40 +102,65 @@ const Dashboard = () => {
                   .map((expense) => (
                     <div
                       key={expense._id}
-                      className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 transition-all duration-500 ease-in-out transform-gpu hover:scale-105 ${
+                      className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 transition-all duration-500 ease-in-out transform hover:scale-105 ${
                         localStorage.getItem('theme') === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
                       }`}
                     >
-                      <p className="text-lg font-medium">{expense.description}</p>
-                      <p className="text-md">Amount: RS. {expense.amount}</p>
-                      <p className="text-sm">Date: {new Date(expense.date).toLocaleDateString()}</p>
+                      <p className="text-lg font-medium flex items-center">
+                        <IoIosPricetags className="mr-2 text-emerald-500" />
+                        {expense.description}
+                      </p>
+                      <p className="text-md flex items-center">
+                        <GrMoney className="mr-2 text-amber-500" />
+                        Amount: RS. {expense.amount}
+                      </p>
+                      <p className="text-sm flex items-center">
+                        <MdDateRange className="mr-2 text-sky-500" />
+                        Date: {new Date(expense.date).toLocaleDateString()}
+                      </p>
                     </div>
                   ))
               ) : (
-                <p className="text-gray-500 text-center">No recent expenses</p>
+                <p className="text-gray-500 text-center dark:text-gray-400">No recent expenses. Please add some expenses to see them here.</p>
               )}
             </div>
           </div>
           <div className="md:w-1/2 pl-4">
-            <h2 className="text-2xl font-semibold mb-6">Expenses by Category</h2>
-            <ExpenseCategoryChart />
+            <h2 className="text-2xl font-semibold mb-6 flex items-center">
+              <FaChartPie className="mr-2 text-purple-500" />
+              Expenses by Category
+            </h2>
+            {expenses.length > 0 ? (
+              <div className="shadow-lg rounded-lg overflow-hidden transition-transform transform-gpu hover:scale-105">
+                <ExpenseCategoryChart />
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center dark:text-gray-400">No expenses data available for chart. Please add some expenses to see the chart here.</p>
+            )}
           </div>
         </div>
         <div className="mb-10">
-          <h2 className="text-2xl font-semibold mb-6">Budget Progress</h2>
-          <div className="flex flex-col">
-            {budgets.map((budget) => {
-              const totalExpenses = calculateTotalExpenses(budget.category);
-              return (
-                <ProgressBar
-                  key={budget._id}
-                  category={budget.category}
-                  total={budget.limit}
-                  current={totalExpenses}
-                />
-              );
-            })}
-          </div>
+          <h2 className="text-2xl font-semibold mb-6 flex items-center">
+            <FaBarsProgress className="mr-2 text-green-500" />
+            Budget Progress
+          </h2>
+          {budgets.length > 0 ? (
+            <div className="flex flex-col">
+              {budgets.map((budget) => {
+                const totalExpenses = calculateTotalExpenses(budget.category);
+                return (
+                  <ProgressBar
+                    key={budget._id}
+                    category={budget.category}
+                    total={budget.limit}
+                    current={totalExpenses}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center dark:text-gray-400">No budgets available. Please add some budgets to track your expenses.</p>
+          )}
         </div>
       </div>
     </div>

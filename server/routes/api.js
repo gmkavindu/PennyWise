@@ -1,11 +1,9 @@
-// api.js
-
 const express = require('express');
 const router = express.Router();
 const { addExpense, getExpenses, updateExpense, deleteExpense } = require('../controllers/expenseController');
 const { addBudget, getBudgets, updateBudget, deleteBudget } = require('../controllers/budgetController');
 const { getFinancialTips, reloadFinancialTips } = require('../controllers/tipsController');
-const { updateAccount, updatePersonal, updateNotifications, updateTheme } = require('../controllers/userController');
+const { updatePersonal, updateTheme } = require('../controllers/userController');
 const User = require('../models/User'); // Import User model
 const auth = require('../middleware/auth');
 

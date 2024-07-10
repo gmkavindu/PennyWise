@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FaSun, FaMoon } from 'react-icons/fa'; // Importing icons from react-icons/fa
 
 const ThemeAppearance = () => {
   const [theme, setTheme] = useState('light');
@@ -13,18 +14,19 @@ const ThemeAppearance = () => {
     }
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleThemeChange = async (e) => {
+    const newTheme = e.target.value;
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+
     try {
-      const response = await axios.put('/api/user/theme', { theme }, {
+      const response = await axios.put('/api/user/theme', { theme: newTheme }, {
         headers: {
           'x-auth-token': localStorage.getItem('token'),
         },
       });
       setMessage(response.data.message);
-      // Apply theme change locally immediately after update
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
     } catch (error) {
       setMessage('Error updating theme');
     }
@@ -34,21 +36,21 @@ const ThemeAppearance = () => {
     <div className={`max-w-md mx-auto p-6 rounded-lg shadow-md ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
       <h2 className="text-2xl font-semibold mb-4 text-center">Theme and Appearance</h2>
       {message && <p className="mb-4 p-3 rounded text-center text-green-800 bg-green-200">{message}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="theme-select" className="block font-bold mb-1">Theme:</label>
-          <select
-            id="theme-select"
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-            className="w-full p-2 border rounded bg-gray-200 text-gray-900"
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </div>
-        <button type="submit" className="w-full p-3 border-none rounded bg-blue-500 text-white hover:bg-blue-600 cursor-pointer">Update</button>
-      </form>
+      <div className="mb-4 flex items-center">
+        <label htmlFor="theme-select" className="block font-bold mb-1 flex items-center">
+          {theme === 'light' ? <FaSun className="mr-2 text-yellow-500" /> : <FaMoon className="mr-2 text-gray-500" />}
+          Select Theme
+        </label>
+        <select
+          id="theme-select"
+          value={theme}
+          onChange={handleThemeChange}
+          className="ml-2 w-full p-2 border rounded bg-gray-200 text-gray-900"
+        >
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
     </div>
   );
 };

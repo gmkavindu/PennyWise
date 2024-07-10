@@ -1,14 +1,9 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const User = require('../models/User');
-const Budget = require('../models/Budget');
-const Expense = require('../models/Expense');
 const router = express.Router();
-const authMiddleware = require('./auth');
+
 
 // Define the profile pictures directory
 const PROFILE_PICTURES_DIR = path.join(__dirname, '../uploads/profiles');
@@ -35,7 +30,7 @@ const storage = multer.diskStorage({
 // Multer upload instance for profile pictures
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 1MB (adjust as necessary)
+  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB (adjust as necessary)
 });
 
 // Serve static files from the uploads directory

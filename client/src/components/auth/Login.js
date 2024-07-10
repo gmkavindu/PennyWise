@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../authContext';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import logoName from '../../assets/images/logo-name.png';
 
 const Login = () => {
   const { login } = useAuth();
@@ -10,6 +12,7 @@ const Login = () => {
     password: ''
   });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State for showing password
   const navigate = useNavigate();
 
   const { email, password } = formData;
@@ -38,11 +41,10 @@ const Login = () => {
     const theme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', theme);
 
-    // Logic after logout and refresh
     const handleLogoutAndRefresh = () => {
-      localStorage.removeItem('token'); // Clear token from localStorage
-      localStorage.setItem('theme', 'light'); // Reset theme to light
-      document.documentElement.setAttribute('data-theme', 'light'); // Update theme on the document
+      localStorage.removeItem('token');
+      localStorage.setItem('theme', 'light');
+      document.documentElement.setAttribute('data-theme', 'light');
     };
 
     window.addEventListener('beforeunload', handleLogoutAndRefresh);
@@ -52,16 +54,21 @@ const Login = () => {
     };
   }, []);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <div className="auth-container bg-gray-100 min-h-screen flex items-center justify-center overflow-y-auto">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-4">Login</h2>
+      <div className="max-w-md w-full bg-emerald-200 p-8 rounded-lg shadow-lg login-container animate-fadeIn">
+        <div className="flex justify-center mb-4">
+          <img src={logoName} alt="Logo" className="h-20 animate-pulse" />
+        </div>
+        <h2 className="text-2xl font-bold mb-4 text-gray-900">Login</h2>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block font-medium text-gray-700">
-              Email:
-            </label>
+          <div className="relative">
+            <FaEnvelope className="absolute top-4 left-3 text-gray-500" />
             <input
               id="email"
               type="email"
@@ -69,30 +76,36 @@ const Login = () => {
               value={email}
               onChange={onChange}
               required
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              placeholder="Enter your email"
+              className="w-full mt-1 px-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 placeholder-gray-400"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="block font-medium text-gray-700">
-              Password:
-            </label>
+          <div className="relative">
+            <FaLock className="absolute top-4 left-3 text-gray-500" />
             <input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'} // Toggle between text and password type
               name="password"
               value={password}
               onChange={onChange}
               required
-              className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              placeholder="Enter your password"
+              className="w-full mt-1 px-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 placeholder-gray-400"
             />
+            <span className="absolute top-4 right-3 text-gray-500 cursor-pointer" onClick={togglePasswordVisibility}>
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
           </div>
           <button
             type="submit"
-            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:bg-green-700"
+            className="w-full bg-green-500 text-white py-2 px-4 rounded-full hover:bg-green-700 focus:outline-none focus:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105"
           >
             Login
           </button>
         </form>
+        <p className="text-center mt-4">
+          Don't have an account? <Link to="/register" className="text-blue-500 hover:underline">Register</Link>
+        </p>
       </div>
     </div>
   );
