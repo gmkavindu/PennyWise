@@ -47,6 +47,7 @@ const SettingsPage = () => {
     if (isThemeAppearanceModal.current) {
       // Optionally handle theme change without reloading
       // setTheme(theme); // You might want to update theme state here
+      window.location.reload();
     }
   };
 
