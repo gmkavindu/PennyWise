@@ -13,6 +13,7 @@ const BudgetManager = () => {
   const [deleteMessage, setDeleteMessage] = useState('');
   const [theme, setTheme] = useState('light'); // State for theme, default is light
   const [showAddPopup, setShowAddPopup] = useState(false); // State for showing add budget popup
+  const [loading, setLoading] = useState(false); // State for loading indicator
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -24,10 +25,13 @@ const BudgetManager = () => {
   useEffect(() => {
     const fetchBudgetsData = async () => {
       try {
+        setLoading(true); // Set loading state to true
         const data = await fetchBudgets();
         setBudgets(data);
       } catch (error) {
         console.error('Error fetching budgets:', error);
+      } finally {
+        setLoading(false); // Set loading state to false
       }
     };
 
@@ -37,10 +41,13 @@ const BudgetManager = () => {
   useEffect(() => {
     const fetchExpensesData = async () => {
       try {
+        setLoading(true); // Set loading state to true
         const data = await fetchExpenses();
         setExpenses(data);
       } catch (error) {
         console.error('Error fetching expenses:', error);
+      } finally {
+        setLoading(false); // Set loading state to false
       }
     };
 
@@ -162,9 +169,16 @@ const BudgetManager = () => {
         {decreaseMessage && <div className="text-red-600 mb-4">{decreaseMessage}</div>}
         {deleteMessage && <div className="text-red-600 mb-4">{deleteMessage}</div>}
 
-        <BudgetList budgets={budgets} onEdit={handleEditBudget} onDelete={handleDeleteBudget} theme={theme} />
-
-        <BudgetChart budgets={budgets} expenses={expenses} theme={theme} />
+        {loading ? (
+          <div className="text-center">
+            <p>Loading...</p> {/* Replace with spinner or loading animation if desired */}
+          </div>
+        ) : (
+          <>
+            <BudgetList budgets={budgets} onEdit={handleEditBudget} onDelete={handleDeleteBudget} theme={theme} />
+            <BudgetChart budgets={budgets} expenses={expenses} theme={theme} />
+          </>
+        )}
       </div>
     </div>
   );

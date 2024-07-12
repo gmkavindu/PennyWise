@@ -1,16 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { fetchExpenses } from '../../services/api';
 
 const ExpenseCategoryChart = () => {
   const chartRef = useRef(null);
+  const [dataEmpty, setDataEmpty] = useState(false);
 
   useEffect(() => {
     const getDataAndRenderChart = async () => {
       try {
         const expenses = await fetchExpenses();
         if (!expenses || expenses.length === 0) {
-          throw new Error('No expenses fetched');
+          setDataEmpty(true); // Set state to indicate no expenses fetched
+          return;
         }
 
         const categories = expenses.reduce((acc, expense) => {
@@ -98,7 +100,13 @@ const ExpenseCategoryChart = () => {
         color: localStorage.getItem('theme') === 'dark' ? '#ffffff' : '#333333', // Adjust text color based on theme
       }}
     >
-      <div ref={chartRef} style={{ width: '100%', height: '500px' }} />
+      {dataEmpty ? (
+        <div className={`py-4 text-${localStorage.getItem('theme') === 'dark' ? 'white' : 'gray-900'} text-center`}>
+          No data available.
+        </div>
+      ) : (
+        <div ref={chartRef} style={{ width: '100%', height: '500px' }} />
+      )}
     </div>
   );
 };

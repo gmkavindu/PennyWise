@@ -10,11 +10,13 @@ const ExpenseManager = () => {
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [theme, setTheme] = useState('light'); // State for theme, default is light
+  const [loading, setLoading] = useState(false); // State for loading indicator
 
   const modalRef = useRef(null);
 
   // Fetch expenses from API
   const fetchExpenses = async () => {
+    setLoading(true); // Set loading state to true
     try {
       const response = await axios.get('/api/expenses', {
         headers: {
@@ -25,6 +27,8 @@ const ExpenseManager = () => {
       setExpenses(sortedExpenses);
     } catch (error) {
       console.error('Error fetching expenses:', error);
+    } finally {
+      setLoading(false); // Set loading state to false when done
     }
   };
 
@@ -125,7 +129,13 @@ const ExpenseManager = () => {
       <Navbar toggleTheme={toggleTheme} />
       <div className="container mx-auto p-4 border rounded shadow-lg max-w-3xl">
         <h2 className="text-center text-xl mb-4">Expense Manager</h2>
-        <ExpenseTable expenses={expenses} onEdit={handleEditExpense} onDelete={handleDeleteExpense} onAddExpense={handleAddExpense} />
+        {loading ? (
+          <div className="text-center">
+            <p>Loading...</p> {/* Replace with spinner or loading animation if desired */}
+          </div>
+        ) : (
+          <ExpenseTable expenses={expenses} onEdit={handleEditExpense} onDelete={handleDeleteExpense} onAddExpense={handleAddExpense} />
+        )}
       </div>
       <Modal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)}>
         <div ref={modalRef}>

@@ -73,7 +73,7 @@ const ExpenseTrendChart = () => {
         {chartData.labels.length > 0 ? (
           <Line data={chartData} options={chartOptions} />
         ) : (
-          <p className="no-data-message">No data available</p>
+          <p className="no-data-message text-center">No data available</p>
         )}
       </div>
     </div>
