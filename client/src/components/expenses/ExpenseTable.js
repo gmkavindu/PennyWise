@@ -109,43 +109,49 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
           <FaPlus className="text-xl" />
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className={`bg-${theme === 'light' ? 'gray-50' : 'gray-700'}`}>
-            <tr>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Category</th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Description</th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className={`divide-y divide-gray-200 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}>
-            {filteredExpenses.map((expense, index) => (
-              <tr key={expense._id} className={`text-${theme === 'light' ? 'gray-900' : 'white'} transition-all duration-300 ${index % 2 === 0 ? 'bg-opacity-50' : 'bg-opacity-75'} hover:${theme === 'light' ? 'bg-gray-200' : 'bg-gray-600'}`}>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">RS. {expense.amount}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.category}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">{new Date(expense.date).toLocaleDateString('en-GB')}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.description}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
-                  <button
-                    onClick={() => onEdit(expense)}
-                    className={`p-2 ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-blue-600 text-white'} rounded-full hover:bg-${theme === 'light' ? 'blue-600' : 'blue-700'}`}
-                  >
-                    <RiPencilLine />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(expense._id)}
-                    className={`p-2 ${theme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-white'} rounded-full hover:bg-${theme === 'light' ? 'red-600' : 'red-700'}`}
-                  >
-                    <RiDeleteBinLine />
-                  </button>
-                </td>
+      {filteredExpenses.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className={`bg-${theme === 'light' ? 'gray-50' : 'gray-700'}`}>
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Category</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Description</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className={`divide-y divide-gray-200 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}>
+              {filteredExpenses.map((expense, index) => (
+                <tr key={expense._id} className={`text-${theme === 'light' ? 'gray-900' : 'white'} transition-all duration-300 ${index % 2 === 0 ? 'bg-opacity-50' : 'bg-opacity-75'} hover:${theme === 'light' ? 'bg-gray-200' : 'bg-gray-600'}`}>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">RS. {expense.amount}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.category}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">{new Date(expense.date).toLocaleDateString('en-GB')}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.description}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
+                    <button
+                      onClick={() => onEdit(expense)}
+                      className={`p-2 ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-blue-600 text-white'} rounded-full hover:bg-${theme === 'light' ? 'blue-600' : 'blue-700'}`}
+                    >
+                      <RiPencilLine />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(expense._id)}
+                      className={`p-2 ${theme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-white'} rounded-full hover:bg-${theme === 'light' ? 'red-600' : 'red-700'}`}
+                    >
+                      <RiDeleteBinLine />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className={`py-4 text-${theme === 'light' ? 'gray-900' : 'white'} text-center`}>
+          No expenses found. Add new expenses using the button above.
+        </div>
+      )}
     </div>
   );
 };
