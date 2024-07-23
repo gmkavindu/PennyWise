@@ -29,12 +29,12 @@ jobs:
 
     - name: Install dependencies for frontend
       run: |
-        cd frontend
+        cd client
         npm install
 
     - name: Run tests for frontend
       run: |
-        cd frontend
+        cd client
         npm test
 
     - name: Install dependencies for backend
