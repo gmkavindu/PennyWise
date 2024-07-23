@@ -18,6 +18,8 @@ jobs:
       matrix:
         node-version: [20]
 
+    name: Test (Node.js ${{ matrix.node-version }})
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -43,6 +45,11 @@ jobs:
         npm install
 
     - name: Run tests for backend
+      env:
+        NODE_ENV: test
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        PORT: ${{ secrets.PORT }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
       run: |
         cd server
         npm test
