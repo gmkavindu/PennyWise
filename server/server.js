@@ -42,7 +42,12 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html')); // Serve React's index.html for all other requests
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Export app for testing
+module.exports = app;
+
+// Start server if not running in test environment
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}

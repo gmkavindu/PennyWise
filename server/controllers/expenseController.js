@@ -130,12 +130,7 @@ exports.deleteExpense = async (req, res) => {
             { $pull: { expenses: req.params.id } },
             { new: true }
         );
-
-        if (!user) {
-            // Return error if user not found after deletion
-            return res.status(404).json({ msg: 'User not found' });
-        }
-
+        
         // Send success message
         res.json({ msg: 'Expense removed' });
     } catch (err) {
