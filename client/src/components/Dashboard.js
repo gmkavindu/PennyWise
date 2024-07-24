@@ -10,7 +10,7 @@ import { MdDateRange } from "react-icons/md";
 import { FaBarsProgress } from "react-icons/fa6";
 import { PiCurrencyCircleDollarBold } from "react-icons/pi";
 import { TiThList } from "react-icons/ti";
-
+import { Link } from 'react-router-dom';
 
 
 
@@ -168,7 +168,16 @@ const Dashboard = () => {
             </div>
           </div>
         ) : (
-          <p className="text-gray-500 text-center dark:text-gray-400">No budgets available. Please add some budgets to track your expenses.</p>
+          <p className="text-gray-500 text-center dark:text-gray-400">
+            No budgets available. Please add some budgets to track your expenses.<br /><br />
+            <Link 
+              to="/budgets" 
+              className="inline-block px-4 py-2 text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Set your budget here.
+            </Link>
+          </p>
+
         )}
       </div>
     </div>
