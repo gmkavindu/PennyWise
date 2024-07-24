@@ -105,7 +105,7 @@ const SettingsPage = () => {
   return (
     <div className={`min-h-screen ${theme === 'light' ? 'text-gray-900 bg-gray-100' : 'text-white bg-gray-800'}`}>
       <Navbar />
-      <div className="p-6 mt-60">
+      <div className="max-w-screen-lg mx-auto my-40 py-4 px-4">
         <nav className="mb-6">
           <ul className="flex flex-col gap-4">
             <li>
