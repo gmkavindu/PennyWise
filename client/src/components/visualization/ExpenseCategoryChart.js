@@ -27,7 +27,7 @@ const ExpenseCategoryChart = () => {
 
         renderChart(chartData);
       } catch (error) {
-        console.error('Error fetching or processing data:', error);
+        // Error handling without console logs
       }
     };
 

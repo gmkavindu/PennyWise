@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - new-feature
+  pull_request:
+    branches:
+      - main
+      - new-feature
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20]
+
+    name: Test (Node.js ${{ matrix.node-version }})
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies for frontend
+      run: |
+        cd client
+        npm install
+
+    - name: Run tests for frontend
+      run: |
+        cd client
+        npm test
+
+    - name: Install dependencies for backend
+      run: |
+        cd server
+        npm install
+
+    - name: Run tests for backend
+      env:
+        NODE_ENV: test
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        PORT: ${{ secrets.PORT }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      run: |
+        cd server
+        npm test

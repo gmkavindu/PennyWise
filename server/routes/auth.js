@@ -172,66 +172,6 @@ router.put('/profile', authMiddleware, upload.single('profilePicture'), async (r
   }
 });
 
-// @route   POST /api/auth/budgets
-// @desc    Create a new budget
-// @access  Private
-router.post('/budgets', authMiddleware, async (req, res) => {
-  const { category, limit } = req.body;
-
-  try {
-    const newBudget = new Budget({
-      category,
-      limit,
-      user: req.user.id,
-    });
-
-    const budget = await newBudget.save();
-
-    // Update user's budgets array with the newly created budget's ID
-    await User.findByIdAndUpdate(
-      req.user.id,
-      { $push: { budgets: budget._id } },
-      { new: true }
-    );
-
-    res.json(budget);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
-
-// @route   POST /api/auth/expenses
-// @desc    Create a new expense
-// @access  Private
-router.post('/expenses', authMiddleware, async (req, res) => {
-  const { amount, category, date, description } = req.body;
-
-  try {
-    const newExpense = new Expense({
-      amount,
-      category,
-      date,
-      description,
-      user: req.user.id,
-    });
-
-    const expense = await newExpense.save();
-
-    // Update user's expenses array with the newly created expense's ID
-    await User.findByIdAndUpdate(
-      req.user.id,
-      { $push: { expenses: expense._id } },
-      { new: true }
-    );
-
-    res.json(expense);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
-
 // @route   DELETE /api/auth/delete-account
 // @desc    Delete user account, budgets, expenses, and profile picture
 // @access  Private

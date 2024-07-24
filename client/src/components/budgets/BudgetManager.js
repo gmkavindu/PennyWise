@@ -11,6 +11,7 @@ const BudgetManager = () => {
   const [expenses, setExpenses] = useState([]);
   const [decreaseMessage, setDecreaseMessage] = useState('');
   const [deleteMessage, setDeleteMessage] = useState('');
+  const [noBudgetMessage, setNoBudgetMessage] = useState(''); // State for no budget message
   const [theme, setTheme] = useState('light'); // State for theme, default is light
   const [showAddPopup, setShowAddPopup] = useState(false); // State for showing add budget popup
   const [loading, setLoading] = useState(false); // State for loading indicator
@@ -28,6 +29,11 @@ const BudgetManager = () => {
         setLoading(true); // Set loading state to true
         const data = await fetchBudgets();
         setBudgets(data);
+        if (data.length === 0) {
+          setNoBudgetMessage('No budget has been set. Add new budget using the button above.');
+        } else {
+          setNoBudgetMessage('');
+        }
       } catch (error) {
         console.error('Error fetching budgets:', error);
       } finally {
@@ -94,6 +100,7 @@ const BudgetManager = () => {
       } else {
         const newBudget = await addBudget(budget);
         setBudgets([...budgets, newBudget]);
+        setNoBudgetMessage(''); // Clear the no budget message
       }
       setBudgetToEdit(null);
       setShowAddPopup(false); // Close the popup after saving
@@ -117,7 +124,15 @@ const BudgetManager = () => {
       }
 
       await deleteBudget(id);
-      setBudgets(budgets.filter((b) => b._id !== id));
+      const updatedBudgets = budgets.filter((b) => b._id !== id);
+      setBudgets(updatedBudgets);
+      
+      // Update noBudgetMessage based on updatedBudgets
+      if (updatedBudgets.length === 0) {
+        setNoBudgetMessage('No budget has been set. Please add a budget to get started.');
+      } else {
+        setNoBudgetMessage('');
+      }
     } catch (error) {
       console.error(`Error deleting budget with ID ${id}:`, error);
     }
@@ -151,7 +166,7 @@ const BudgetManager = () => {
             className={`fixed inset-0 flex items-center justify-center z-50 popup-bg bg-${theme === 'light' ? 'white' : 'gray-800'} bg-opacity-75`}
             onClick={handleOutsideClick}
           >
-            <div className={`p-6 rounded-lg shadow-md w-full sm:w-96 relative bg-${theme === 'light' ? 'bg-white border-black border-2' : 'gray-900'}`}>
+            <div className={`p-6 rounded-lg shadow-md w-full sm:w-96 relative bg-${theme === 'light' ? 'white border-black border-2' : 'gray-900'}`}>
               <div className="mb-4">
                 <BudgetForm
                   onSave={handleSaveBudget}
@@ -161,17 +176,17 @@ const BudgetManager = () => {
                   theme={theme}
                 />
               </div>
-              {/* You can add more content or components here */}
             </div>
           </div>
         )}
 
         {decreaseMessage && <div className="text-red-600 mb-4">{decreaseMessage}</div>}
         {deleteMessage && <div className="text-red-600 mb-4">{deleteMessage}</div>}
+        {noBudgetMessage && <div className={`text-center text-${theme === 'light' ? 'dark:text-gray-400' : 'red-400'} mb-4`}>{noBudgetMessage}</div>}
 
         {loading ? (
           <div className="text-center">
-            <p>Loading...</p> {/* Replace with spinner or loading animation if desired */}
+            <p>Loading...</p>
           </div>
         ) : (
           <>
