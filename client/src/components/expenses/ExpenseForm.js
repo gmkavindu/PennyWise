@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
   const [amount, setAmount] = useState('');
@@ -155,8 +156,15 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
             ))}
           </select>
         ) : (
-          <div className={`mt-1 p-2 block w-full border rounded ${theme === 'light' ? 'bg-gray-100 text-gray-500' : 'bg-gray-800 text-gray-400'}`}>
-            {loadingBudgets ? 'Loading budgets...' : 'No budgets found. Please create a budget first.'}
+          <div className={`mt-1 p-2 block w-full border rounded ${theme === 'light' ? 'bg-gray-100 text-gray-900' : 'bg-gray-800 text-gray-400'}`}>
+            {loadingBudgets ? 'Loading budgets...' : (
+              <Fragment>
+                No budgets found. Please create a budget first. 
+                <Link to="/budgets" className="inline-block px-4 py-1 text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  Set your budget here.
+                </Link>
+              </Fragment>
+            )}
           </div>
         )}
       </div>

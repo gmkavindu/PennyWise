@@ -34,7 +34,6 @@ const ExpenseTrendChart = () => {
           ],
         });
       } catch (error) {
-        console.error('Error fetching or processing data:', error);
       }
     };
 
