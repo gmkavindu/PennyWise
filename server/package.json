@@ -2,9 +2,9 @@
   "name": "pennywise",
   "version": "1.0.0",
   "description": "",
-  "main": "playground-1.mongodb.js",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server/server.js",
     "test": "jest",
     "build": "cd ../client && npm install && npm run build"
   },
