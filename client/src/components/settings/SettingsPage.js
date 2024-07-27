@@ -8,6 +8,7 @@ import ThemeAppearance from './ThemeAppearance';
 import Navbar from '../Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCog, faUser, faPalette, faTrashAlt, faEnvelope, faGlobe, faInfoCircle  } from '@fortawesome/free-solid-svg-icons';
+import Footer from '../Footer';
 
 const SettingsPage = () => {
   const [theme, setTheme] = useState('light');
@@ -103,9 +104,9 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'light' ? 'text-gray-900 bg-gray-100' : 'text-white bg-gray-800'}`}>
+    <div className={`flex flex-col min-h-screen ${theme === 'light' ? 'text-gray-900 bg-gray-100' : 'text-white bg-gray-800'}`}>
       <Navbar />
-      <div className="max-w-screen-lg mx-auto my-40 py-4 px-4">
+      <div className="container mx-auto py-4 px-4 max-w-screen-lg mt-40 flex-1">
         <nav className="mb-6">
           <ul className="flex flex-col gap-4">
             <li>
@@ -172,20 +173,19 @@ const SettingsPage = () => {
           </div>
         )}
       </div>
-
-      {/* Contact Details Section */}
-      <div className="absolute bottom-0 left-0 right-0 py-4 bg-gray-900 text-white text-center">
-        <div className="flex flex-col items-center justify-center">
-          <p className="mb-2">
+      {/* Inline Footer Content */}
+      <div className="bg-gray-900 text-white py-4">
+        <div className="container mx-auto text-center">
+          <p>
             <span className="mr-2">Contact:</span>
             <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-            <a href="mailto:gmkavindu@gmail.com" className="hover:text-blue-400">gmkavindu@gmail.com </a>
+            <a href="mailto:gmkavindu@gmail.com" className="hover:text-blue-400 mr-3">gmkavindu@gmail.com</a>
             <FontAwesomeIcon icon={faGlobe} className="mr-2" />
             <a href="https://gmkavindu.me" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">gmkavindu.me</a>
           </p>
-          <p className="text-xs">Version: v1.0.0</p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
