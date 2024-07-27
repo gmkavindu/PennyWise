@@ -11,7 +11,6 @@ import SettingsPage from './components/settings/SettingsPage';
 import ThemeAppearance from './components/settings/ThemeAppearance';
 import AccountSettings from './components/settings/AccountSettings';
 import PersonalInformation from './components/settings/PersonalInformation';
-import Footer from './components/Footer';
 import { AuthProvider, useAuth } from './authContext'; // Assuming this is your authentication context provider
 import logo from './assets/images/logo.png';
 import logoName from './assets/images/logo-name.png';
@@ -44,9 +43,9 @@ function HomePage() {
       {/* Register and Login buttons */}
       {!isAuthenticated && (
         <div className="mt-8 space-x-4 text-lg md:text-xl lg:text-2xl flex items-center">
-          <Link to="/register" className="inline-block bg-green-500 text-white px-6 py-2 rounded-lg shadow-md transition duration-300 hover:bg-teal-500">Register</Link>
+          <Link to="/register" className="inline-block bg-emerald-500 text-white px-6 py-2 rounded-lg shadow-md transition duration-300 hover:bg-emerald-600">Register</Link>
           <span className="mx-2"></span> {/* Spacer */}
-          <Link to="/login" className="inline-block bg-green-500 text-white px-10 py-2 rounded-lg shadow-md transition duration-300 hover:bg-teal-500">Login</Link>
+          <Link to="/login" className="inline-block bg-emerald-500 text-white px-10 py-2 rounded-lg shadow-md transition duration-300 hover:bg-emerald-600">Login</Link>
         </div>
       )}
     </div>
@@ -81,7 +80,7 @@ function App() {
             <Route path="/settings/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
             <Route path="/settings/personal" element={<ProtectedRoute><PersonalInformation /></ProtectedRoute>} />
           </Routes>
-          <Footer /> {/* Footer component */}
+          
         </div>
       </Router>
     </AuthProvider>
