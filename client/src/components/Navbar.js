@@ -67,16 +67,16 @@ const Navbar = () => {
   };
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 shadow-md ${getBackgroundColor()} transition-all duration-300`}>
-      <div className="flex justify-between items-center px-4 py-1">
+    <div className={`fixed top-0 left-0 right-0 z-50  ${getBackgroundColor()} transition-all duration-300`}>
+      <div className="flex justify-between items-center px-4 -my-4">
         <div className="flex items-center">
           <Link to="/dashboard">
-            <img src={logoName} alt="Logo" className="h-20 md:h-20 w-auto mr-4" />
+            <img src={logoName} alt="Logo" className="h-32 md:h-32 w-auto" />
           </Link>
         </div>
 
         {/* Default Desktop Menu */}
-        <div className="hidden md:flex space-x-4" ref={menuRef}>
+        <div className="hidden md:flex space-x-4 mt-3 mr-12 -ml-9" ref={menuRef}>
           <Link to="/dashboard" className={`btn-nav ${getTextColor()} ${getHoverTextColor()} ${getHoverBackgroundColor()} transition duration-300`}>
             <FiHome className="mr-2" /> Dashboard
           </Link>
