@@ -4,6 +4,7 @@ import ExpenseForm from './ExpenseForm';
 import ExpenseTable from './ExpenseTable';
 import Navbar from '../Navbar';
 import Modal from '../Modal/Modal';
+import Footer from '../Footer'; // Make sure you import the Footer component
 
 const ExpenseManager = () => {
   const [expenses, setExpenses] = useState([]);
@@ -125,23 +126,26 @@ const ExpenseManager = () => {
   }, []);
 
   return (
-    <div className={`mt-32 mb-20 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
+    <div className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
       <Navbar toggleTheme={toggleTheme} />
-      <div className="container mx-auto p-4 border rounded shadow-lg max-w-3xl">
-        <h2 className="text-center text-xl mb-4">Expense Manager</h2>
-        {loading ? (
-          <div className="text-center">
-            <p>Loading...</p> {/* Replace with spinner or loading animation if desired */}
-          </div>
-        ) : (
-          <ExpenseTable expenses={expenses} onEdit={handleEditExpense} onDelete={handleDeleteExpense} onAddExpense={handleAddExpense} />
-        )}
-      </div>
+      <main className="flex-grow">
+        <div className="container mx-auto p-4 border rounded shadow-lg max-w-3xl mt-32">
+          <h2 className="text-center text-2xl font-bold mb-6 animate-fadeIn">Expense Manager</h2>
+          {loading ? (
+            <div className="text-center">
+              <p>Loading...</p> {/* Replace with spinner or loading animation if desired */}
+            </div>
+          ) : (
+            <ExpenseTable expenses={expenses} onEdit={handleEditExpense} onDelete={handleDeleteExpense} onAddExpense={handleAddExpense} />
+          )}
+        </div>
+      </main>
       <Modal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)}>
         <div ref={modalRef}>
           <ExpenseForm onSave={handleSaveExpense} expenseToEdit={expenseToEdit} clearEdit={clearEdit} onClose={() => setIsModalVisible(false)} />
         </div>
       </Modal>
+      <Footer />
     </div>
   );
 };
