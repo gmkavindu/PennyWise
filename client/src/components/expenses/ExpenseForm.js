@@ -53,7 +53,12 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
       setDescription(expenseToEdit.description);
       fetchExpenses(expenseToEdit.category);
     } else {
-      resetForm();
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      setDate(formattedDate);
     }
   }, [expenseToEdit]);
 
@@ -100,10 +105,15 @@ const ExpenseForm = ({ onSave, expenseToEdit, clearEdit, onClose }) => {
       setAlertMessage(''); // Clear alert message when no error
     }
 
+    const now = new Date();
+    const selectedDate = new Date(date);
+    const combinedDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${now.toTimeString().split(' ')[0]}`);
+    
+
     const expense = {
       amount: newAmount,
       category,
-      date,
+      date: combinedDateTime.toISOString(), // Use ISO string format for consistency
       description,
       _id: expenseToEdit ? expenseToEdit._id : undefined,
     };
