@@ -5,14 +5,13 @@ import ProgressBar from './ProgressBar';
 import Navbar from './Navbar';
 import axios from 'axios';
 import { FaSpinner, FaChartPie } from 'react-icons/fa';
-import { IoIosPricetags } from "react-icons/io";
-import { MdDateRange } from "react-icons/md";
-import { FaBarsProgress } from "react-icons/fa6";
-import { PiCurrencyCircleDollarBold } from "react-icons/pi";
-import { TiThList } from "react-icons/ti";
+import { MdDateRange } from 'react-icons/md';
+import { FaBarsProgress } from 'react-icons/fa6';
+import { GiTakeMyMoney } from "react-icons/gi";
+import { BiBox } from "react-icons/bi";
+import { TiThList } from 'react-icons/ti';
 import { Link } from 'react-router-dom';
-
-
+import Footer from './Footer';
 
 const Dashboard = () => {
   const [name, setName] = useState('');
@@ -30,7 +29,6 @@ const Dashboard = () => {
         setBudgets(budgetsData);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error);
         setLoading(false);
       }
     };
@@ -69,6 +67,23 @@ const Dashboard = () => {
       .reduce((total, expense) => total + expense.amount, 0);
   };
 
+  // Map to store colors for each category
+  const categoryColors = {};
+
+  const getCategoryColor = (category) => {
+    if (!categoryColors[category]) {
+      categoryColors[category] = getRandomLightColor();
+    }
+    return categoryColors[category];
+  };
+
+  const getRandomLightColor = () => {
+    const r = Math.floor(Math.random() * 56) + 200;
+    const g = Math.floor(Math.random() * 56) + 200;
+    const b = Math.floor(Math.random() * 56) + 200;
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -79,9 +94,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="container mx-auto py-4 px-4 max-w-screen-lg mt-24 mb-20">
+      <div className="container mx-auto py-4 px-4 max-w-screen-lg mt-24 mb-20 flex-1">
         <div className="flex items-center mb-6">
           {profilePicture && (
             <img
@@ -107,20 +122,20 @@ const Dashboard = () => {
                     .map((expense) => (
                       <div
                         key={expense._id}
-                        className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 transition-all duration-500 ease-in-out transform hover:scale-105 ${
-                          localStorage.getItem('theme') === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-                        }`}
+                        className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 transition-all duration-500 ease-in-out transform hover:scale-105 text-gray-800 font-bold`}
+                        style={{ backgroundColor: getCategoryColor(expense.category) }}
                       >
-                        <p className="text-lg font-medium flex items-center ">
-                          <IoIosPricetags className="mr-2 text-emerald-500" />
-                          {expense.description}
+                        <p className="text-lg flex items-center">
+                          {/* Conditionally render icon based on description */}
+                          {expense.description ? <BiBox  className="mr-2" /> : null}
+                          {expense.description || ''}
                         </p>
                         <p className="text-md flex items-center">
-                          <PiCurrencyCircleDollarBold  className="mr-2 text-pink-600" />
+                          <GiTakeMyMoney className="mr-2" />
                           Amount: RS. {expense.amount}
                         </p>
                         <p className="text-sm flex items-center">
-                          <MdDateRange className="mr-2 text-sky-500" />
+                          <MdDateRange className="mr-2" />
                           Date: {new Date(expense.date).toLocaleDateString()}
                         </p>
                       </div>
@@ -177,9 +192,9 @@ const Dashboard = () => {
               Set your budget here.
             </Link>
           </p>
-
         )}
       </div>
+      <Footer />
     </div>
   );
 };
