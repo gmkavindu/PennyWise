@@ -49,7 +49,7 @@ const ExpenseCategoryChart = () => {
         backgroundColor: localStorage.getItem('theme') === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)', // Tooltip background color based on theme
       },
       legend: {
-        top: '5%',
+        top: '1%',
         left: 'center',
         textStyle: {
           color: localStorage.getItem('theme') === 'dark' ? '#ffffff' : '#333333', // Legend text color based on theme
