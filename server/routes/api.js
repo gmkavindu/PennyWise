@@ -38,4 +38,25 @@ router.get('/user/me', auth, async (req, res) => {
   }
 });
 
+// @route   POST /api/agree-to-privacy-policy
+// @desc    Update user agreement to privacy policy
+// @access  Private
+router.post('/agree-to-privacy-policy', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    user.agreedToPrivacyPolicy = req.body.agreement;
+    await user.save();
+
+    res.status(200).json({ message: 'Privacy policy agreement updated successfully' });
+  } catch (err) {
+    console.error('Error updating privacy policy agreement:', err);
+    res.status(500).json({ message: 'Failed to update privacy policy agreement' });
+  }
+});
+
 module.exports = router;
