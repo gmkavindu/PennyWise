@@ -73,3 +73,15 @@ export const sendReloadRequest = async () => {
     throw error;
   }
 };
+
+export const updatePrivacyPolicyAgreement = async (agreement) => {
+  try {
+    const response = await axios.post(`${API_URL}/agree-to-privacy-policy`, { agreement }, {
+      headers: { 'x-auth-token': localStorage.getItem('token') },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating privacy policy agreement:', error);
+    throw error;
+  }
+};

@@ -34,6 +34,10 @@ const UserSchema = new mongoose.Schema({
   profilePicture: {
     type: String,
   },
+  agreedToPrivacyPolicy: {  // New field for privacy policy agreement
+    type: Boolean,
+    default: false,
+  },
   budgets: [
     {
       type: mongoose.Schema.Types.ObjectId,
