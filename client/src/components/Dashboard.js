@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchExpenses, fetchBudgets } from '../services/api';
-import ExpenseCategoryChart from './visualization/ExpenseCategoryChart';
+import ExpenseCategoryChart from './visualization/ExpenseCategoryChartDashboard';
 import ProgressBar from './ProgressBar';
 import Navbar from './Navbar';
 import axios from 'axios';
