@@ -19,8 +19,19 @@ const ExpenseTrendChart = () => {
         const expenses = await fetchExpenses();
         if (!expenses || expenses.length === 0) throw new Error('No expenses fetched');
 
-        const dates = expenses.map(expense => new Date(expense.date).toLocaleDateString());
-        const amounts = expenses.map(expense => expense.amount);
+        // Sort expenses by date
+        const sortedExpenses = expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Format dates as MM/DD
+        const formatDate = (dateString) => {
+          const date = new Date(dateString);
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns 0-based month
+          return `${month}/${day}`;
+        };
+
+        const dates = sortedExpenses.map(expense => formatDate(expense.date));
+        const amounts = sortedExpenses.map(expense => expense.amount);
 
         setChartData({
           labels: dates,
@@ -34,6 +45,7 @@ const ExpenseTrendChart = () => {
           ],
         });
       } catch (error) {
+        console.error(error); // Log the error to the console
       }
     };
 
