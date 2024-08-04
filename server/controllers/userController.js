@@ -102,3 +102,117 @@ exports.updateUserTips = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.updateUserSalary = async (req, res) => {
+  try {
+    const userId = req.user.id; // Get user ID from middleware
+    const { salary, period, startDate, customPeriod } = req.body;
+
+    // Validate the period
+    const validPeriods = ['weekly', 'monthly', 'yearly', 'custom'];
+    if (!validPeriods.includes(period)) {
+      return res.status(400).json({ message: 'Invalid period value' });
+    }
+
+    const user = await User.findById(userId);
+
+    if (user) {
+      let expirationDate;
+
+      switch (period) {
+        case 'weekly':
+          expirationDate = new Date(startDate);
+          expirationDate.setDate(expirationDate.getDate() + 7);
+          break;
+        case 'monthly':
+          expirationDate = new Date(startDate);
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+          break;
+        case 'yearly':
+          expirationDate = new Date(startDate);
+          expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+          break;
+        case 'custom':
+          expirationDate = new Date(startDate);
+          expirationDate.setDate(expirationDate.getDate() + (customPeriod || 0));
+          break;
+        default:
+          expirationDate = new Date(startDate);
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+      }
+
+      user.salaryDetails = {
+        salary,
+        period,
+        startDate,
+        customPeriod,
+        expirationDate
+      };
+      await user.save();
+
+      res.status(200).json(user.salaryDetails);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+exports.getUserSalary = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming you're using a middleware to get the user ID
+    const user = await User.findById(userId);
+
+    if (user) {
+      res.status(200).json(user.salaryDetails); // Ensure salaryDetails contains full details including period dates
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.saveBudgetStatus = async (req, res) => {
+  try {
+    const { totalBudgets, totalExpenses, statusMessage, salary, period, customPeriod, startDate, expirationDate } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    user.lastBudgetStatus = {
+      totalBudgets,
+      totalExpenses,
+      statusMessage,
+      salary,
+      period,
+      customPeriod,
+      startDate,
+      expirationDate,
+    };
+
+    await user.save();
+    res.status(200).json({ message: 'Budget status saved successfully' });
+  } catch (err) {
+    console.error('Error saving budget status:', err);
+    res.status(500).json({ message: 'Failed to save budget status' });
+  }
+};
+
+exports.getLastBudgetStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('lastBudgetStatus');
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    res.status(200).json(user.lastBudgetStatus);
+  } catch (err) {
+    console.error('Error fetching last budget status:', err);
+    res.status(500).json({ message: 'Failed to fetch last budget status' });
+  }
+};
