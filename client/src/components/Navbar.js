@@ -5,6 +5,8 @@ import { FiHome, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { MdOutlineTipsAndUpdates, MdAttachMoney, MdAutoGraph } from "react-icons/md";
 import { TbReportMoney } from "react-icons/tb";
 import logoName from '../assets/images/logo-name.png';
+import { VscFeedback } from "react-icons/vsc";
+
 
 const Navbar = () => {
   const { logout } = useAuth();
@@ -123,6 +125,9 @@ const Navbar = () => {
               <Link to="/settings" className={`block w-full px-4 py-2 ${getTextColor()} ${getHoverTextColor()} ${getHoverBackgroundColor()} flex items-center transition duration-300`}>
                 <FiSettings className="mr-2" /> Settings
               </Link>
+              <Link to="/feedback" className={`block w-full px-4 py-2 ${getTextColor()} ${getHoverTextColor()} ${getHoverBackgroundColor()} flex items-center transition duration-300`}>
+                <VscFeedback className="mr-2" /> Feedback
+              </Link>
               <button onClick={handleLogout} className={`block w-full px-4 py-2 text-red-500 ${getHoverTextColor()} ${getHoverBackgroundColor()} flex items-center transition duration-300`}>
                 <FiLogOut className="mr-2" /> Logout
               </button>
@@ -143,6 +148,9 @@ const Navbar = () => {
             <div className={`absolute right-0 mt-2 w-48 shadow-lg rounded-lg ${getBackgroundColor()}`} ref={popupRef}>
               <Link to="/settings" className={`block w-full px-4 py-2 ${getTextColor()} ${getHoverTextColor()} ${getHoverBackgroundColor()} flex items-center transition duration-300`}>
                 <FiSettings className="mr-2" /> Settings
+              </Link>
+              <Link to="/feedback" className={`block w-full px-4 py-2 ${getTextColor()} ${getHoverTextColor()} ${getHoverBackgroundColor()} flex items-center transition duration-300`}>
+                <VscFeedback className="mr-2" /> Feedback
               </Link>
               <button onClick={handleLogout} className={`block w-full px-4 py-2 text-red-500 ${getHoverTextColor()} ${getHoverBackgroundColor()} flex items-center transition duration-300`}>
                 <FiLogOut className="mr-2" /> Logout
