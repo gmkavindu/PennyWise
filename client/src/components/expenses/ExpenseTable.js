@@ -58,6 +58,8 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
   // Filter and sort expenses based on search term, category, and date
   const filteredExpenses = expenses.filter((expense) => {
     return (
+
+      expense.budget !== null && 
       (filterCategory === '' || expense.category === filterCategory) &&
       (filterDate === '' || new Date(expense.date).toISOString().split('T')[0] === filterDate) &&
       (searchTerm === '' || expense.description.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -179,5 +181,6 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
     </div>
   );
 };
+
 
 export default ExpenseTable;
