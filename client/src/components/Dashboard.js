@@ -61,10 +61,24 @@ const Dashboard = () => {
     }
   }, []);
 
+  // Create a mapping of budget IDs to categories
+  const budgetCategoryMap = budgets.reduce((map, budget) => {
+    map[budget._id] = budget.category;
+    return map;
+  }, {});
+
+  // Calculate total expenses for each category based on budget IDs
+  const categoryExpenseMap = expenses.reduce((acc, expense) => {
+    const category = budgetCategoryMap[expense.budget];
+    if (category) {
+      acc[category] = (acc[category] || 0) + expense.amount;
+    }
+    return acc;
+  }, {});
+
+  // Function to get total expenses for a specific category
   const calculateTotalExpenses = (category) => {
-    return expenses
-      .filter(expense => expense.category === category)
-      .reduce((total, expense) => total + expense.amount, 0);
+    return categoryExpenseMap[category] || 0;
   };
 
   // Map to store colors for each category
@@ -123,7 +137,7 @@ const Dashboard = () => {
                       <div
                         key={expense._id}
                         className={`w-full max-w-lg rounded-lg shadow-md p-4 mb-4 transition-all duration-500 ease-in-out transform hover:scale-105 text-gray-800 font-bold`}
-                        style={{ backgroundColor: getCategoryColor(expense.category) }}
+                        style={{ backgroundColor: getCategoryColor(budgetCategoryMap[expense.budget]) }}
                       >
                         <p className="text-lg flex items-center">
                           {/* Conditionally render icon based on description */}
