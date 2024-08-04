@@ -19,53 +19,47 @@ exports.getExpenses = async (req, res) => {
 
 // Add a new expense
 exports.addExpense = async (req, res) => {
-    const { amount, category, date, description } = req.body;
+    const { amount, category, date, description, budgetId } = req.body;
 
     try {
-        // Find the budget for the given category and user
-        const budget = await Budget.findOne({ category, user: req.user.id });
+        // Find the specific budget by ID and user
+        const budget = await Budget.findOne({ _id: budgetId, user: req.user.id });
 
         if (!budget) {
-            // Return error if no budget found for the category
-            return res.status(400).json({ message: `No budget found for category ${category}` });
+            return res.status(400).json({ message: 'No budget found for the provided ID and category.' });
         }
 
-        // Calculate the total expenses for the category
-        const totalExpenseForCategory = await Expense.aggregate([
-            { $match: { category, user: req.user.id } },
+        // Calculate the total expenses for the specific budget
+        const totalExpenseForBudget = await Expense.aggregate([
+            { $match: { budget: budget._id, user: req.user.id } },
             { $group: { _id: null, total: { $sum: '$amount' } } }
         ]);
 
-        const currentTotal = totalExpenseForCategory.length ? totalExpenseForCategory[0].total : 0;
+        const currentTotal = totalExpenseForBudget.length ? totalExpenseForBudget[0].total : 0;
         const newTotal = currentTotal + amount;
 
-        if (newTotal > budget.limit) {
-            // Return error if adding this expense exceeds the budget limit
-            return res.status(400).json({ message: `Adding this expense exceeds the budget limit for ${category}` });
-        }
+        // Remove the budget limit check here
+        // if (newTotal > budget.limit) {
+        //     return res.status(400).json({ message: 'Adding this expense exceeds the budget limit.' });
+        // }
 
-        // Create new expense instance
+        // Create and save the new expense
         const newExpense = new Expense({
             amount,
             category,
             date,
             description,
-            user: req.user.id
+            user: req.user.id,
+            budget: budget._id
         });
 
-        // Save the new expense
         const expense = await newExpense.save();
 
         // Update user's expenses array with the newly created expense's ID
-        await User.findByIdAndUpdate(
-            req.user.id,
-            { $push: { expenses: expense._id }, $set: { lastExpensesUpdate: new Date() } },
-            { new: true }
-        );
+        await User.findByIdAndUpdate(req.user.id, { $push: { expenses: expense._id }, $set: { lastExpensesUpdate: new Date() } }, { new: true });
 
         res.json(expense);
     } catch (err) {
-        // Handle server errors
         res.status(500).json({ message: 'Server Error', error: err.message });
     }
 };
@@ -88,19 +82,39 @@ exports.updateExpense = async (req, res) => {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
-        // Update the expense with new data
-        expense = await Expense.findByIdAndUpdate(
-            req.params.id,
-            { $set: { amount, category, date, description } },
-            { new: true }
-        );
+        // Preserve the current budget ID if not provided in the request
+        const updatedExpenseData = {
+            amount: amount !== undefined ? amount : expense.amount,
+            category: category !== undefined ? category : expense.category,
+            date: date !== undefined ? date : expense.date,
+            description: description !== undefined ? description : expense.description,
+            budget: expense.budget // Preserve the existing budget ID
+        };
+
+        // Calculate the new total for the budget
+        const totalExpenseForBudget = await Expense.aggregate([
+            { $match: { budget: expense.budget, user: req.user.id } },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
+
+        const currentTotal = totalExpenseForBudget.length ? totalExpenseForBudget[0].total : 0;
+        const newTotal = currentTotal + updatedExpenseData.amount - expense.amount;
+
+        // Find the budget and check if new total exceeds the limit
+        const budget = await Budget.findOne({ _id: expense.budget, user: req.user.id });
+        // Remove the budget limit check here
+        // if (budget && newTotal > budget.limit) {
+        //     return res.status(400).json({ message: 'Updating this expense exceeds the budget limit.' });
+        // }
+
+        // Update the expense
+        expense = await Expense.findByIdAndUpdate(req.params.id, { $set: updatedExpenseData }, { new: true });
 
         // Update user's last expenses update timestamp
         await User.findByIdAndUpdate(req.user.id, { lastExpensesUpdate: new Date() });
 
         res.json(expense);
     } catch (err) {
-        // Handle server errors
         res.status(500).json({ message: 'Server Error', error: err.message });
     }
 };
@@ -125,12 +139,12 @@ exports.deleteExpense = async (req, res) => {
         await Expense.findByIdAndDelete(req.params.id);
 
         // Remove expense ID from user's expenses array
-        const user = await User.findByIdAndUpdate(
+        await User.findByIdAndUpdate(
             req.user.id,
-            { $pull: { expenses: req.params.id } },
+            { $pull: { expenses: req.params.id }, $set: { lastExpensesUpdate: new Date() } },
             { new: true }
         );
-        
+
         // Send success message
         res.json({ msg: 'Expense removed' });
     } catch (err) {
