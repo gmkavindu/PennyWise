@@ -65,7 +65,7 @@ beforeAll(async () => {
       category: 'Groceries',
       date: new Date(),
       description: 'Grocery shopping',
-      user: userId
+      budgetId: budgetId
     });
 
   expenseId = expenseRes.body._id;
@@ -89,7 +89,7 @@ describe('Expense Routes', () => {
         category: 'Groceries',
         date: new Date(),
         description: 'Grocery shopping (2)',
-        user: userId
+        budgetId: budgetId
       });
 
     expect(res.statusCode).toBe(200); // Adjust based on your API response code
@@ -97,6 +97,7 @@ describe('Expense Routes', () => {
     expect(res.body).toHaveProperty('category', 'Groceries');
     expect(res.body).toHaveProperty('description', 'Grocery shopping (2)');
     expect(res.body).toHaveProperty('user', userId.toString());
+    expect(res.body).toHaveProperty('budget', budgetId.toString());
   });
 
   it('should get all expenses', async () => {
