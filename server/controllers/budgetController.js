@@ -2,6 +2,7 @@
 
 const Budget = require('../models/Budget');
 const User = require('../models/User'); // Import User model
+const Expense = require('../models/Expense'); // Import Expense model
 
 // Get all budgets for a user
 exports.getBudgets = async (req, res) => {
@@ -70,6 +71,14 @@ exports.updateBudget = async (req, res) => {
             { new: true }
         );
 
+        // If the category is updated, also update it in all associated expenses
+        if (category) {
+            await Expense.updateMany(
+                { budget: budget._id, user: req.user.id },
+                { $set: { category } }
+            );
+        }
+
         res.json(budget);
     } catch (err) {
         console.error(err.message);
@@ -103,5 +112,22 @@ exports.deleteBudget = async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
+    }
+};
+
+exports.resetBudgets = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Find all budgets associated with the user and delete them
+        
+
+        // Update all expenses to remove budget references
+        await Expense.updateMany({ user: userId }, { $set: { budget: null } });
+
+        // Respond with success
+        res.status(200).json({ message: 'Budgets have been reset and deleted.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error resetting and deleting budgets.' });
     }
 };
