@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
   profilePicture: {
     type: String,
   },
-  agreedToPrivacyPolicy: {  // New field for privacy policy agreement
+  agreedToPrivacyPolicy: {
     type: Boolean,
     default: false,
   },
@@ -50,6 +50,34 @@ const UserSchema = new mongoose.Schema({
       ref: 'Expense',
     },
   ],
+  salaryDetails: {
+    salary: { type: Number, default: 0 },
+    period: {
+      type: String,
+      enum: ['weekly', 'monthly', 'yearly', 'custom'], // Added 'custom'
+      default: 'monthly'
+    },
+    customPeriod: { type: Number }, // Custom period in days
+    startDate: { type: Date, default: Date.now },
+    expirationDate: { type: Date },
+  },
+  
+  lastBudgetStatus: {
+    totalBudgets: { type: Number, default: 0 },
+    totalExpenses: { type: Number, default: 0 },
+    statusMessage: { type: String, default: '' },
+    salary: { type: Number, default: 0 },
+    period: {
+      type: String,
+      enum: ['weekly', 'monthly', 'yearly', 'custom'], // Added 'custom'
+      default: 'monthly'
+    },
+    customPeriod: { type: Number }, // Custom period in days
+    startDate: { type: Date, default: Date.now },
+    expirationDate: { type: Date },
+
+  },
+
 });
 
 module.exports = mongoose.model('User', UserSchema);
