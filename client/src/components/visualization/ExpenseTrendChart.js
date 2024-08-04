@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchExpenses } from '../../services/api';
 
 const ExpenseTrendChart = () => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
-  const [theme, setTheme] = useState('light'); // State for theme, default is light
+  const [theme, setTheme] = useState('light');
+  const [dataEmpty, setDataEmpty] = useState(false);
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -19,8 +21,22 @@ const ExpenseTrendChart = () => {
         const expenses = await fetchExpenses();
         if (!expenses || expenses.length === 0) throw new Error('No expenses fetched');
 
-        // Sort expenses by date
-        const sortedExpenses = expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const BudgetExpenses = expenses.filter(expense => expense.budget !== null);
+
+        const today = new Date();
+        const past30Days = new Date(today.setDate(today.getDate() - 30));
+
+        const filteredExpenses = BudgetExpenses.filter(expense => new Date(expense.date) >= past30Days);
+
+        if (filteredExpenses.length === 0) {
+          setDataEmpty(true);
+          return;
+        } else {
+          setDataEmpty(false);
+        }
+
+        // Sort filtered expenses by date
+        const sortedExpenses = filteredExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         // Format dates as MM/DD
         const formatDate = (dateString) => {
@@ -45,7 +61,7 @@ const ExpenseTrendChart = () => {
           ],
         });
       } catch (error) {
-        console.error(error); // Log the error to the console
+        setDataEmpty(true);
       }
     };
 
@@ -80,13 +96,15 @@ const ExpenseTrendChart = () => {
 
   return (
     <div className={`shadow-md rounded-lg p-4 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
-      <div className="chart-wrapper" style={{ height: '400px' }}> {/* Adjust the height as needed */}
-        {chartData.labels.length > 0 ? (
+      {dataEmpty ? (
+        <div className={`py-4 text-${theme === 'dark' ? 'white' : 'gray-900'} text-center`}>
+          No data available.
+        </div>
+      ) : (
+        <div ref={chartRef} style={{ width: '100%', height: '500px' }}>
           <Line data={chartData} options={chartOptions} />
-        ) : (
-          <p className="no-data-message text-center">No data available</p>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
