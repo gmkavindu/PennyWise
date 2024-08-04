@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory, theme }) => {
+const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory, theme, existingCategories }) => {
   const [category, setCategory] = useState('');
   const [customCategory, setCustomCategory] = useState('');
   const [limit, setLimit] = useState('');
@@ -14,9 +14,11 @@ const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory,
     { emoji: '🎥', name: 'Entertainment' },
     { emoji: '🏠', name: 'Housing' },
     { emoji: '❤️', name: 'Health' },
+    { emoji: '💳', name: 'Credit Card' },
     { emoji: '💸', name: 'Miscellaneous' },
     { emoji: '📚', name: 'Education' },
     { emoji: '🛍️', name: 'Shopping' },
+    { emoji: '🏦', name: 'Loan' },
     { emoji: '🎁', name: 'Gifts' },
     { emoji: '🧳', name: 'Travel' },
     { emoji: '🧹', name: 'Cleaning' },
@@ -29,9 +31,6 @@ const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory,
     { emoji: '👨‍⚕️', name: 'Medical' },
     { emoji: '🔧', name: 'Repairs' }
   ], []);
-  
-
-
 
   useEffect(() => {
     if (budgetToEdit) {
@@ -58,6 +57,13 @@ const BudgetForm = ({ onSave, budgetToEdit, clearEdit, totalExpensesForCategory,
 
     const finalCategory = useCustomCategory ? customCategory : category;
     const processedCategory = finalCategory.replace(/^[^\w\s]/, '').trim(); // Remove emoji
+
+    // Check for duplicate category
+    if (!budgetToEdit && existingCategories.includes(processedCategory)) {
+      setAlertMessage(`A budget for the category "${processedCategory}" already exists.`);
+      return;
+    }
+
     onSave({ category: processedCategory, limit: newLimit });
     clearForm();
   };
