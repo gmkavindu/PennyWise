@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaPlus } from 'react-icons/fa';
-import { RiPencilLine, RiDeleteBinLine } from 'react-icons/ri';
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import { FaSearch, FaTrash } from 'react-icons/fa';
+import { fetchExpenses } from '../../services/api'; // Ensure the import path is correct
+import axios from 'axios';
+import { confirmAlert } from 'react-confirm-alert'; // Import confirmAlert
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import CSS for confirmAlert
 
-const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
-  // State hooks for search term, filter criteria, theme, and visibility of search fields
+const PastExpenseTable = ({ startDate }) => {
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
-  const [filterDate, setFilterDate] = useState('');
   const [theme, setTheme] = useState('light');
   const [showSearchFields, setShowSearchFields] = useState(false);
 
-  // Effect hook to load the theme from local storage on component mount
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
@@ -20,7 +21,21 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
     }
   }, []);
 
-  // Event handlers for input changes
+  useEffect(() => {
+    const getExpenses = async () => {
+      try {
+        const expensesData = await fetchExpenses();
+        setExpenses(expensesData);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    getExpenses();
+  }, []);
+
   const handleSearchTermChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -29,19 +44,33 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
     setFilterCategory(e.target.value);
   };
 
-  const handleDateChange = (e) => {
-    setFilterDate(e.target.value);
+  const handleDeleteExpense = async (id) => {
+    try {
+      await axios.delete(`/api/expenses/${id}`, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+        },
+      });
+      // Refresh expenses after deletion
+      const expensesData = await fetchExpenses();
+      setExpenses(expensesData);
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+    }
   };
 
-  // Function to handle expense deletion with confirmation
-  const handleDeleteClick = (id) => {
+  const handleClearNullBudgetExpenses = () => {
     confirmAlert({
-      title: 'Confirm to delete',
-      message: 'Are you sure you want to delete this expense?',
+      title: 'Confirm to clear',
+      message: 'Are you sure you want to delete all expenses with no budget?',
       buttons: [
         {
           label: 'Yes',
-          onClick: () => onDelete(id),
+          onClick: () => {
+            expenses
+              .filter(expense => expense.budget === null)
+              .forEach(expense => handleDeleteExpense(expense._id));
+          },
           className: 'react-confirm-alert-button'
         },
         {
@@ -52,43 +81,53 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
     });
   };
 
-  // Generate a list of unique categories from the expenses
   const categories = [...new Set(expenses.map((expense) => expense.category))];
 
-  // Filter and sort expenses based on search term, category, and date
   const filteredExpenses = expenses.filter((expense) => {
-    return (
+    const expenseDate = new Date(expense.date);
+    const isWithinDateRange =
+      (!startDate || expenseDate >= new Date(startDate));
 
-      expense.budget !== null && 
+    return (
+      expense.budget === null &&
       (filterCategory === '' || expense.category === filterCategory) &&
-      (filterDate === '' || new Date(expense.date).toISOString().split('T')[0] === filterDate) &&
+      isWithinDateRange &&
       (searchTerm === '' || expense.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by `createdAt` field
+  }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  const anyExpensesWithNullBudget = expenses.some(expense => expense.budget === null);
 
   return (
     <div className={`p-4 rounded shadow-lg mb-4 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
-      {/* Buttons to toggle search fields and add a new expense */}
       <div className="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-between">
         <button
           onClick={() => setShowSearchFields(!showSearchFields)}
           className={`flex items-center justify-center mb-4 w-full sm:w-auto px-4 py-2 ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-blue-700 text-white'} rounded-full hover:bg-${theme === 'light' ? 'blue-600' : 'blue-800'}`}
         >
           <FaSearch className="mr-2" />
-          Search Expenses
+          Search Past Expenses
         </button>
-        <button
-          onClick={onAddExpense}
-          className={`flex items-center justify-center w-12 h-12 mb-2 ${theme === 'light' ? 'bg-green-500 text-white' : 'bg-green-700 text-white'} rounded-full hover:bg-${theme === 'light' ? 'green-600' : 'green-800'}`}
-        >
-          <FaPlus className="text-xl" />
-        </button>
+        {anyExpensesWithNullBudget && (
+          <button
+            onClick={handleClearNullBudgetExpenses}
+            className={`flex items-center justify-center w-full sm:w-auto px-4 py-2 ${theme === 'light' ? 'bg-rose-500 text-white' : 'bg-rose-700 text-white'} rounded-full hover:bg-${theme === 'light' ? 'rose-600' : 'rose-800'}`}
+          >
+            Delete All
+          </button>
+        )}
       </div>
 
-      {/* Conditional rendering of search fields */}
       {showSearchFields && (
         <div className="mb-4 flex flex-col sm:flex-row items-center justify-center sm:justify-between space-y-2 sm:space-y-0 sm:space-x-2">
-          {/* Search by description input */}
           <div className="relative w-full sm:w-auto">
             <input
               type="text"
@@ -101,7 +140,6 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
               <FaSearch className={`${theme === 'light' ? 'text-gray-400' : 'text-gray-300'}`} />
             </div>
           </div>
-          {/* Category filter dropdown */}
           <div className="relative w-full sm:w-auto">
             <select
               value={filterCategory}
@@ -115,26 +153,10 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
                 </option>
               ))}
             </select>
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaSearch className={`${theme === 'light' ? 'text-gray-400' : 'text-gray-300'}`} />
-            </div>
-          </div>
-          {/* Date filter input */}
-          <div className="relative w-full sm:w-auto">
-            <input
-              type="date"
-              value={filterDate}
-              onChange={handleDateChange}
-              className={`block w-full p-2 pl-10 pr-4 border ${theme === 'light' ? 'border-gray-300' : 'border-gray-600'} rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === 'light' ? 'text-gray-900' : 'text-white'} ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-600'}`}
-            />
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaSearch className={`${theme === 'light' ? 'text-gray-400' : 'text-gray-300'}`} />
-            </div>
           </div>
         </div>
       )}
 
-      {/* Conditional rendering of the table or a message if no expenses are found */}
       {filteredExpenses.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -149,23 +171,17 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
             </thead>
             <tbody className={`divide-y divide-gray-200 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}>
               {filteredExpenses.map((expense, index) => (
-                <tr key={expense._id} className={`text-${theme === 'light' ? 'gray-900' : 'white'} transition-all duration-300 ${index % 2 === 0 ? 'bg-opacity-50' : 'bg-opacity-75'} hover:${theme === 'light' ? 'bg-gray-200' : 'bg-gray-600'}`}>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">RS. {expense.amount}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.category}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{new Date(expense.date).toLocaleDateString('en-GB')}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">{expense.description}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
+                <tr key={expense._id} className={`text-${theme === 'light' ? 'gray-900' : 'white'} transition-all duration-300 ${index % 2 === 0 ? 'bg-opacity-50' : 'bg-opacity-75'} hover:${theme === 'light' ? 'bg-gray-100' : 'bg-gray-700'}`}>
+                  <td className="px-4 py-3">{expense.amount}</td>
+                  <td className="px-4 py-3">{expense.category}</td>
+                  <td className="px-4 py-3">{new Date(expense.date).toLocaleDateString()}</td>
+                  <td className="px-4 py-3">{expense.description}</td>
+                  <td className="px-9 py-3">
                     <button
-                      onClick={() => onEdit(expense)}
-                      className={`p-2 ${theme === 'light' ? 'bg-blue-500 text-white' : 'bg-blue-600 text-white'} rounded-full hover:bg-${theme === 'light' ? 'blue-600' : 'blue-700'}`}
+                      onClick={() => handleDeleteExpense(expense._id)}
+                      className={`text-${theme === 'light' ? 'red-600' : 'red-400'} hover:text-${theme === 'light' ? 'red-700' : 'red-300'} transition-colors`}
                     >
-                      <RiPencilLine />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClick(expense._id)}
-                      className={`p-2 ${theme === 'light' ? 'bg-red-500 text-white' : 'bg-red-600 text-white'} rounded-full hover:bg-${theme === 'light' ? 'red-600' : 'red-700'}`}
-                    >
-                      <RiDeleteBinLine />
+                      <FaTrash />
                     </button>
                   </td>
                 </tr>
@@ -174,13 +190,10 @@ const ExpenseTable = ({ onEdit, onDelete, expenses, onAddExpense }) => {
           </table>
         </div>
       ) : (
-        <div className={`py-4 text-${theme === 'light' ? 'gray-900' : 'white'} text-center`}>
-          No expenses found. Add new expenses using the button above.
-        </div>
+        <div>No expenses found</div>
       )}
     </div>
   );
 };
 
-
-export default ExpenseTable;
+export default PastExpenseTable;

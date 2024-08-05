@@ -1,17 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { fetchExpenses } from '../../services/api';
 
-const ExpenseTrendChart = () => {
+const PastExpenseTrendChart = ({ startDate }) => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [theme, setTheme] = useState('light');
   const [dataEmpty, setDataEmpty] = useState(false);
-  const chartRef = useRef(null);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
-      setTheme(storedTheme); // Set theme from localStorage
+      setTheme(storedTheme);
     }
   }, []);
 
@@ -19,14 +18,14 @@ const ExpenseTrendChart = () => {
     const getData = async () => {
       try {
         const expenses = await fetchExpenses();
-        if (!expenses || expenses.length === 0) throw new Error('No expenses fetched');
+        if (!expenses || expenses.length === 0) {
+          setDataEmpty(true);
+          throw new Error('No expenses fetched');
+        }
 
-        const BudgetExpenses = expenses.filter(expense => expense.budget !== null);
+        const nullBudgetExpenses = expenses.filter(expense => expense.budget === null);
 
-        const today = new Date();
-        const past30Days = new Date(today.setDate(today.getDate() - 30));
-
-        const filteredExpenses = BudgetExpenses.filter(expense => new Date(expense.date) >= past30Days);
+        const filteredExpenses = nullBudgetExpenses.filter(expense => new Date(expense.date) >= startDate);
 
         if (filteredExpenses.length === 0) {
           setDataEmpty(true);
@@ -35,14 +34,12 @@ const ExpenseTrendChart = () => {
           setDataEmpty(false);
         }
 
-        // Sort filtered expenses by date
         const sortedExpenses = filteredExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        // Format dates as MM/DD
         const formatDate = (dateString) => {
           const date = new Date(dateString);
           const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns 0-based month
+          const month = String(date.getMonth() + 1).padStart(2, '0');
           return `${month}/${day}`;
         };
 
@@ -61,12 +58,11 @@ const ExpenseTrendChart = () => {
           ],
         });
       } catch (error) {
-        setDataEmpty(true);
       }
     };
 
     getData();
-  }, [theme]);
+  }, [theme, startDate]);
 
   const chartOptions = {
     responsive: true,
@@ -75,9 +71,9 @@ const ExpenseTrendChart = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          color: theme === 'light' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)', // Adjust tick color based on theme
+          color: theme === 'light' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
           callback: function (value) {
-            return `RS. ${value}`; // Add currency symbol in front of the amount
+            return `RS. ${value}`;
           },
         },
       },
@@ -101,7 +97,7 @@ const ExpenseTrendChart = () => {
           No data available.
         </div>
       ) : (
-        <div ref={chartRef} style={{ width: '100%', height: '500px' }}>
+        <div className="chart-wrapper" style={{ height: '400px' }}>
           <Line data={chartData} options={chartOptions} />
         </div>
       )}
@@ -109,4 +105,4 @@ const ExpenseTrendChart = () => {
   );
 };
 
-export default ExpenseTrendChart;
+export default PastExpenseTrendChart;

@@ -16,8 +16,8 @@ async function generateFinancialTips(userData) {
     };
 
     // Fetch expenses from MongoDB based on user ID
-    const expenses = await Expense.find({ user: userData.user });
-    
+    const expenses = await Expense.find({ user: userData.user }).populate('budget'); // Populate budget field
+
     // Fetch budgets from MongoDB based on user ID
     const budgets = await Budget.find({ user: userData.user });
 
@@ -27,13 +27,34 @@ async function generateFinancialTips(userData) {
       return map;
     }, {});
 
-    // Construct input prompt based on user expenses and budget
-    const expenseSummary = expenses.map(expense => {
+    // Filter expenses to include only those with a valid budget
+    const validExpenses = expenses.filter(expense => expense.budget);
+
+    // Construct input prompt based on user expenses with valid budgets
+    const expenseSummary = validExpenses.map(expense => {
       const budgetLimit = budgetMap[expense.category] || 'No budget limit set';
       return `Category: ${expense.category}, Amount: RS.${expense.amount}, Budget Limit: RS.${budgetLimit}, Description: ${expense.description || 'No description'}`;
     }).join('\n');
 
-    const prompt = `Generate personalized financial tips based on your recent expenses in Sri Lankan Rupees (RS.) and your budget limits:\n\nExpenses:\n${expenseSummary}\n\nPlease provide structured, practical advice and cost-saving strategies in bullet points or short paragraphs suitable for a web app. Ensure all amounts are in Sri Lankan Rupees (RS.).`;
+    // If no valid expenses to process, return a message indicating no data
+    if (!validExpenses.length) {
+      return 'No valid budgeted expenses available for generating financial tips.';
+    }
+
+    // Ensure prompt is only constructed once
+    const prompt = `Based on the following recent expenses in Sri Lankan Rupees (RS.) and your budget limits, please generate personalized financial tips:
+
+        **Expenses:**
+        ${expenseSummary}
+
+        **Instructions:**
+        - Provide actionable advice and cost-saving strategies.
+        - Include practical suggestions for managing or reducing expenses.
+        - Offer insights on how to better align spending with budget limits.
+        - Structure the tips in bullet points or short paragraphs for clarity.
+        - Ensure all amounts are clearly presented in Sri Lankan Rupees (RS.).
+
+        Your response should help in improving financial management and making informed decisions based on the given expense data.`;
 
     // Define data payload for the request
     const requestData = {

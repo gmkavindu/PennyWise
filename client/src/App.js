@@ -11,6 +11,7 @@ import SettingsPage from './components/settings/SettingsPage';
 import ThemeAppearance from './components/settings/ThemeAppearance';
 import AccountSettings from './components/settings/AccountSettings';
 import PersonalInformation from './components/settings/PersonalInformation';
+import Feedback from './components/Feedback';
 import { AuthProvider, useAuth } from './authContext'; // Assuming this is your authentication context provider
 import logo from './assets/images/logo.png';
 import logoName from './assets/images/logo-name.png';
@@ -79,8 +80,8 @@ function App() {
             <Route path="/settings/theme" element={<ProtectedRoute><ThemeAppearance /></ProtectedRoute>} />
             <Route path="/settings/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
             <Route path="/settings/personal" element={<ProtectedRoute><PersonalInformation /></ProtectedRoute>} />
+            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
           </Routes>
-          
         </div>
       </Router>
     </AuthProvider>

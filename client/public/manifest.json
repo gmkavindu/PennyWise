@@ -1,6 +1,7 @@
 {
   "short_name": "PennyWise",
-  "name": "Create React App Sample",
+
+  "name": "PennyWise",
   "icons": [
     {
       "src": "favicon.ico",

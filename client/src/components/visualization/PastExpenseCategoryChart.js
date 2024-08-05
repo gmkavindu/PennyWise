@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import { fetchExpenses, fetchBudgets } from '../../services/api';
+import { fetchExpenses } from '../../services/api';
 
-const ExpenseCategoryChartDashboard = () => {
+const PastExpenseCategoryChart = ( {startDate} ) => {
   const chartRef = useRef(null);
   const [dataEmpty, setDataEmpty] = useState(false);
   const chartInstanceRef = useRef(null);
@@ -19,7 +19,7 @@ const ExpenseCategoryChartDashboard = () => {
 
     const option = {
       backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-      color: theme === 'dark' 
+      color: theme === 'dark'
         ? ['#36A2EB', '#FFCE56', '#E74C3C', '#9966FF', '#7F8C8D', '#2E86C1', '#17A589', '#E74C8C', '#9B59B6', '#1ABC9C']
         : ['#2E86C1', '#17A589', '#E74C8C', '#9B59B6', '#1ABC9C', '#36A2EB', '#FFCE56', '#E74C3C', '#9966FF', '#7F8C8D'],
       tooltip: {
@@ -82,20 +82,17 @@ const ExpenseCategoryChartDashboard = () => {
     const getDataAndRenderChart = async () => {
       try {
         const expenses = await fetchExpenses();
-        const budgets = await fetchBudgets();
 
-        if (!expenses || expenses.length === 0 || !budgets || budgets.length === 0) {
+        if (!expenses || expenses.length === 0) {
           setDataEmpty(true);
           return;
         }
 
-        const budgetMap = budgets.reduce((acc, budget) => {
-          acc[budget._id] = budget.category;
-          return acc;
-        }, {});
+        const nullBudgetExpenses = expenses.filter(expense => expense.budget === null);
+        const filteredExpenses = nullBudgetExpenses.filter(expense => new Date(expense.date) >= startDate);
 
-        const categories = expenses.reduce((acc, expense) => {
-          const category = budgetMap[expense.budget];
+        const categories = filteredExpenses.reduce((acc, expense) => {
+          const category = expense.category;
           if (category) {
             acc[category] = (acc[category] || 0) + expense.amount;
           }
@@ -114,7 +111,7 @@ const ExpenseCategoryChartDashboard = () => {
     };
 
     getDataAndRenderChart();
-  }, []);
+  }, [ startDate ]);
 
   return (
     <div
@@ -138,4 +135,4 @@ const ExpenseCategoryChartDashboard = () => {
   );
 };
 
-export default ExpenseCategoryChartDashboard;
+export default PastExpenseCategoryChart;

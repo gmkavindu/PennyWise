@@ -11,11 +11,24 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
         chartInstance.current.destroy(); // Destroy existing chart instance if it exists
       }
 
+      // Create a mapping of budget IDs to categories
+      const budgetCategoryMap = budgets.reduce((map, budget) => {
+        map[budget._id] = budget.category;
+        return map;
+      }, {});
+
+      // Calculate budget limits and total expenses for each category
+      const categoryExpenseMap = expenses.reduce((acc, expense) => {
+        const category = budgetCategoryMap[expense.budget];
+        if (category) {
+          acc[category] = (acc[category] || 0) + expense.amount;
+        }
+        return acc;
+      }, {});
+
       const labels = budgets.map((budget) => budget.category);
       const budgetLimits = budgets.map((budget) => budget.limit);
-      const totalExpenses = labels.map((label) =>
-        expenses.reduce((total, exp) => (exp.category === label ? total + exp.amount : total), 0)
-      );
+      const totalExpenses = labels.map((label) => categoryExpenseMap[label] || 0);
 
       const ctx = chartRef.current.getContext('2d');
       chartInstance.current = new Chart(ctx, {
@@ -41,10 +54,14 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
         },
         options: {
           indexAxis: 'y', // Ensure horizontal bar chart
+          responsive: true, // Make the chart responsive
+          maintainAspectRatio: false, // Allow chart to adjust its size
           plugins: {
             legend: {
               display: true,
               position: 'top',
+              labels: {                
+              },
             },
             tooltip: {
               callbacks: {
@@ -59,20 +76,26 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
               title: {
                 display: true,
                 text: 'Amount',
+                
               },
               ticks: {
                 beginAtZero: true,
+                
               },
             },
             y: {
               title: {
                 display: true,
                 text: 'Category',
+                
               },
               ticks: {
                 font: {
                   size: 12,
                 },
+                autoSkip: false,
+                maxRotation: 45,
+                
               },
             },
           },
@@ -81,7 +104,11 @@ const BudgetChart = ({ budgets, expenses, theme }) => {
     }
   }, [budgets, expenses, theme]);
 
-  return <canvas ref={chartRef} />;
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '400px' }}> {/* Ensure chart container is responsive */}
+      <canvas ref={chartRef} />
+    </div>
+  );
 };
 
 export default BudgetChart;

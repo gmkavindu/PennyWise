@@ -53,7 +53,6 @@ const FinancialTips = () => {
         throw new Error('Invalid response format');
       }
     } catch (error) {
-      console.error('Failed to load financial tips:', error);
       setError('Failed to load financial tips');
       setLoading(false);
 
@@ -83,7 +82,6 @@ const FinancialTips = () => {
         setHasBudgetsOrExpenses(false);
       }
     } catch (error) {
-      console.error('Failed to fetch budgets or expenses:', error);
       setError('Failed to fetch budgets or expenses');
       setLoading(false);
     }
@@ -104,7 +102,6 @@ const FinancialTips = () => {
         setPrivacyPolicyAgreement(false);
       }
     } catch (error) {
-      console.error('Failed to fetch privacy policy agreement status:', error);
     } finally {
       setPrivacyPolicyLoading(false);
     }
@@ -128,7 +125,6 @@ const FinancialTips = () => {
       setTips([]); // Clear tips if user disagrees
       setError('You have disagreed with the privacy policy. You will not receive personalized financial tips.');
     } catch (error) {
-      console.error('Failed to update privacy policy agreement:', error);
       setError('Failed to update privacy policy agreement. Please try again.');
     } finally {
       setPrivacyPolicyLoading(false); // Hide loading state
