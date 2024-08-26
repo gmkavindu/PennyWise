@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import BudgetForm from './BudgetForm';
-import SalaryForm from './SalaryForm'; // Import SalaryForm
+import IncomeForm from './IncomeForm'; // Import SalaryForm
 import BudgetList from './BudgetList';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
@@ -12,8 +12,8 @@ import {
   updateBudget, 
   fetchExpenses, 
   resetBudgets, 
-  updateSalary, 
-  fetchSalary,
+  updateIncomeDetails, 
+  fetchIncomeDetails,
   saveBudgetStatusToUser, // Import saveBudgetStatusToUser function
 } from '../../services/api';
 
@@ -28,11 +28,13 @@ const BudgetManager = () => {
   const [budgetErrorMessage, setBudgetErrorMessage] = useState('');
   const [theme, setTheme] = useState('light');
   const [showAddPopup, setShowAddPopup] = useState(false);
-  const [showSalaryPopup, setShowSalaryPopup] = useState(false); // State for Salary Popup
+  const [showIncomePopup, setShowIncomePopup] = useState(false); // State for Salary Popup
   const [loading, setLoading] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
-  const [salary, setSalary] = useState(0);
-  const [remainingSalary, setRemainingSalary] = useState(0);
+  const [income, setIncome] = useState(0);
+  const [incomeDetails, setIncomeDetails] = useState([]); // Initialize as an empty array
+
+  const [remainingIncome, setRemainingIncome] = useState(0);
   const [expirationDate, setExpirationDate] = useState(null);
   const [period, setPeriod] = useState(null);
   const [startDate, setStartDate] = useState(null);
@@ -86,27 +88,41 @@ const BudgetManager = () => {
   }, []);
 
   useEffect(() => {
-    const fetchSalaryData = async () => {
+    const fetchIncomeData = async () => {
       try {
-        const salaryData = await fetchSalary();
-        setSalary(salaryData.salary);
-        setCustomPeriod(salaryData.customPeriod);
-        setExpirationDate(salaryData.expirationDate);
-        setPeriod(salaryData.period);
-        setStartDate(salaryData.startDate);
+        const incomeData = await fetchIncomeDetails();
+        console.log('Fetched income data:', incomeData); // Log the data for inspection
+    
+        // Check if incomeData and incomeData.categories are defined and are arrays
+        if (incomeData && Array.isArray(incomeData.categories)) {
+          const totalIncome = incomeData.categories.reduce((acc, detail) => acc + detail.amount, 0);
+          setIncome(totalIncome);
+    
+          // Set the state for the details object
+          setPeriod(incomeData.details.period);
+          setCustomPeriod(incomeData.details.customPeriod);
+          setExpirationDate(incomeData.details.expirationDate);
+          setStartDate(incomeData.details.startDate);
+          setIncomeDetails(incomeData.categories); // Update this to use categories
+        } else {
+          console.error('Income details not found or is not an array:', incomeData);
+        }
       } catch (error) {
-        console.error('Error fetching salary:', error);
+        console.error('Error fetching income details:', error);
       }
     };
-
-    fetchSalaryData();
+    
+  
+    fetchIncomeData();
   }, [budgets]);
+  
+  
 
   useEffect(() => {
     // Calculate remaining salary whenever budgets or salary change
     const totalBudgets = budgets.reduce((sum, budget) => sum + budget.limit, 0);
-    setRemainingSalary(salary - totalBudgets);
-  }, [budgets, salary]);
+    setRemainingIncome(income - totalBudgets);
+  }, [budgets, income]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -129,10 +145,10 @@ const BudgetManager = () => {
       const totalExpenseForBudget = calculateTotalExpensesForBudget(budgetToEdit?._id);
       const totalBudgets = budgets.reduce((sum, b) => sum + b.limit, 0) - (budgetToEdit ? budgetToEdit.limit : 0) + budget.limit;
 
-      if (salary === 0 || totalBudgets <= salary) {
+      if (income === 0 || totalBudgets <= income) {
         setBudgetErrorMessage('');
       } else {
-        const message = `Cannot add/update budget because the total budget amount exceeds the salary.`;
+        const message = `Cannot add/update budget because the total budget amount exceeds the income.`;
         setBudgetErrorMessage(message);
         return;
       }
@@ -160,20 +176,40 @@ const BudgetManager = () => {
     }
   };
 
-  const handleUpdateSalary = async (newSalary) => {
+  const handleUpdateIncomeDetails = async (newIncomeDetails) => {
     try {
-      await updateSalary(newSalary);
-      setSalary(newSalary);
-      const salaryData = await fetchSalary()
-      updateExpirationStatus(salaryData.expirationDate, salaryData.startDate, salaryData.period);
+      // Call the API to update income details
+      await updateIncomeDetails(newIncomeDetails);
       
+      // Fetch the updated income details to ensure everything is updated correctly
+      const incomeData = await fetchIncomeDetails();
+      
+      // Check if incomeData and incomeData.categories are defined and are arrays
+      if (incomeData && Array.isArray(incomeData.categories)) {
+        const totalIncome = incomeData.categories.reduce((acc, detail) => acc + detail.amount, 0);
+        setIncome(totalIncome);
+  
+        // Set the state for the details object
+        setIncomeDetails(incomeData.categories); // Ensure this is an array
+        
+        // Update the expiration status based on the fetched details
+        updateExpirationStatus(
+          incomeData.details.expirationDate,
+          incomeData.details.startDate,
+          incomeData.details.period
+        );
+      } else {
+        console.error('Income details not found or is not an array:', incomeData);
+        // Reset incomeDetails to an empty array in case of an error
+        setIncomeDetails([]);
+      }
     } catch (error) {
-      console.error('Error updating salary:', error);
+      console.error('Error updating income details:', error);
     } finally {
-      setShowSalaryPopup(false); // Close the popup after saving
-      window.location.reload();
+      setShowIncomePopup(false); 
     }
   };
+
 
   const updateExpirationStatus = (expirationDate, startDate, period) => {
     setExpirationDate(expirationDate);
@@ -214,16 +250,18 @@ const BudgetManager = () => {
   const handleResetBudgets = async () => {
     try {
       setLoading(true);
-    
+      
       // Calculate total budget
-      const totalBudgets = budgets.reduce((sum, b) => sum + b.limit, 0);
-    
+      let totalBudgets = 0;
+      budgets.forEach(b => totalBudgets += b.limit);
+      
       // Filter expenses to include only those with a non-null budget value
       const filteredExpenses = expenses.filter(exp => exp.budget !== null);
-    
+      
       // Calculate total expenses
-      const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    
+      let totalExpenses = 0;
+      filteredExpenses.forEach(exp => totalExpenses += exp.amount);
+      
       // Calculate remaining or exceeded amount
       const remainingOrExceededAmount = totalBudgets - totalExpenses;
       
@@ -231,35 +269,46 @@ const BudgetManager = () => {
       const formattedAmount = remainingOrExceededAmount >= 0
         ? `Remaining Budgets Amount: ${remainingOrExceededAmount}`
         : `Exceeded Budgets Amount: ${Math.abs(remainingOrExceededAmount)}`;
-
-        const salaryData = await fetchSalary();
-        const salary =  salaryData.salary;
-        const period = salaryData.period;
-        const customPeriod = salaryData.customPeriod;
-        const startDate = salaryData.startDate;
-        const expirationDate = salaryData.expirationDate;
-
+      
+      // Fetch income details
+      const incomeData = await fetchIncomeDetails();
+      let totalIncome = 0;
+      if (incomeData && Array.isArray(incomeData.categories)) {
+        incomeData.categories.forEach(detail => totalIncome += detail.amount);
+      }
+      
+      // Prepare category-wise income details
+      const incomeCategories = (incomeData && Array.isArray(incomeData.categories)) 
+        ? incomeData.categories.map(detail => ({
+            category: detail.category,
+            amount: detail.amount
+          }))
+        : [];
+      
+      const period = incomeData.details.period;
+      const customPeriod = incomeData.details.customPeriod;
+      const startDate = incomeData.details.startDate;
+      const expirationDate = incomeData.details.expirationDate;
       
       // Save budget status to the user
-      await saveBudgetStatusToUser(totalBudgets, totalExpenses, `Previous Period ${formattedAmount}`, salary, period, customPeriod, startDate, expirationDate);
-    
+      await saveBudgetStatusToUser(totalBudgets, totalExpenses, `Previous Period ${formattedAmount}`, totalIncome, period, customPeriod, startDate, expirationDate, incomeCategories);
+      
       // Reset budgets
       await resetBudgets();
-    
+      
       // Update state
       setBudgets([]);
       setNoBudgetMessage('All budgets have been reset. Please add a new budget to get started.');
       
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-
+      
+  
     } catch (error) {
       console.error('Error resetting budgets:', error);
     } finally {
       setLoading(false);
     }
   };
+  
   
   
   
@@ -271,7 +320,7 @@ const BudgetManager = () => {
   const handleOutsideClick = (e) => {
     if (e.target.classList.contains('popup-bg')) {
       handleClearForm();
-      setShowSalaryPopup(false); // Close salary popup if clicked outside
+      setShowIncomePopup(false); // Close salary popup if clicked outside
     }
   };
 
@@ -321,8 +370,17 @@ const BudgetManager = () => {
   const periodMessage = period === 'custom' ? `Custom Period: ${customPeriod} days` : `Standard Period: ${period}`;
 
   const getSalaryButtonText = () => {
-    return salary > 0 ? 'Update Salary' : 'Add Salary';
+    // Ensure incomeDetails is an array before using .some
+    if (Array.isArray(incomeDetails)) {
+      const hasIncome = incomeDetails.some(detail => detail.amount > 0);
+      return hasIncome ? 'Update Income' : 'Add Income';
+    } else {
+      console.error('Income details is not an array:', incomeDetails);
+      return 'Add Income'; // Default button text in case of an error
+    }
   };
+  
+  
 
   const expensesWithBudget = expenses.filter(expense => expense.budget !== null);
 
@@ -332,7 +390,7 @@ const BudgetManager = () => {
       <div className="max-w-4xl mx-auto p-6 border rounded-lg shadow-md mt-32">
         <h2 className="text-center text-2xl font-bold mb-6 animate-fadeIn">Budget Manager</h2>
           {/* Budget Status Messages */}
-          {salary > 0 && (
+          {income > 0 && (
             <div
               className={`text-center mb-6 p-4 rounded-lg shadow-md ${
                 theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'
@@ -407,12 +465,12 @@ const BudgetManager = () => {
           </button>
           <button
             className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md"
-            onClick={() => setShowSalaryPopup(true)} // Show salary popup
+            onClick={() => setShowIncomePopup(true)} // Show salary popup
           >
             {getSalaryButtonText()}
           </button>
 
-          {budgets.length > 0 && expensesWithBudget.length > 0 && salary === 0 && (
+          {budgets.length > 0 && expensesWithBudget.length > 0 && income === 0 && (
               <button
                 className={`text-white py-2 px-4 rounded-md ${
                   theme === 'light'
@@ -446,16 +504,18 @@ const BudgetManager = () => {
           </div>
         )}
 
-        {showSalaryPopup && ( // Salary Popup
+        {showIncomePopup && ( // Salary Popup
           <div
             className={`fixed inset-0 flex items-center justify-center z-50 popup-bg bg-${theme === 'light' ? 'white' : 'gray-800'} bg-opacity-75`}
             onClick={handleOutsideClick}
           >
             <div className={`p-6 rounded-lg shadow-md w-full sm:w-96 relative bg-${theme === 'light' ? 'white border-black border-2' : 'gray-900'}`}>
-              <SalaryForm
-                onSave={handleUpdateSalary}
-                currentSalary={salary}
-                onClose={() => setShowSalaryPopup(false)}
+              <IncomeForm
+                onSave={handleUpdateIncomeDetails}
+                incomeDetails={incomeDetails}
+                currentIncome={income}
+                onClose={() => setShowIncomePopup(false)}
+                clearEdit={handleClearForm}
                 theme={theme}
               />
             </div>
@@ -492,10 +552,10 @@ const BudgetManager = () => {
           </div>
         )}
 
-        {salary > 0 && (
+        {income > 0 && (
           <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold">Salary: {salary}</h3>
-            <h3 className="text-xl font-semibold">Remaining Salary: {remainingSalary}</h3>
+            <h3 className="text-xl font-semibold">Income: {income}</h3>
+            <h3 className="text-xl font-semibold">Remaining Income: {remainingIncome}</h3>
           </div>
         )}
 
