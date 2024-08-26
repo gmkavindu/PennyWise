@@ -3,7 +3,7 @@ const router = express.Router();
 const { addExpense, getExpenses, updateExpense, deleteExpense } = require('../controllers/expenseController');
 const { addBudget, getBudgets, updateBudget, deleteBudget, resetBudgets } = require('../controllers/budgetController');
 const { getFinancialTips, reloadFinancialTips } = require('../controllers/tipsController');
-const { updatePersonal, updateTheme, updateUserSalary , getUserSalary, saveBudgetStatus, getLastBudgetStatus } = require('../controllers/userController');
+const { updatePersonal, updateTheme, updateUserIncomeDetails  , getUserIncomeDetails, saveBudgetStatus, getLastBudgetStatus } = require('../controllers/userController');
 const { postFeedback, getFeedbacks } = require('../controllers/feedbackController');
 const User = require('../models/User'); // Import User model
 const auth = require('../middleware/auth');
@@ -29,10 +29,10 @@ router.post('/financial-tips/reload', auth, reloadFinancialTips);
 router.put('/user/personal', auth, updatePersonal);
 router.put('/user/theme', auth, updateTheme);
 // Get user salary details
-router.get('/salary', auth, getUserSalary);
+router.get('/income', auth, getUserIncomeDetails);
 
 // Update user salary details
-router.put('/salary', auth, updateUserSalary);
+router.put('/income', auth, updateUserIncomeDetails );
 router.post('/user/save-budget-status', auth, saveBudgetStatus);
 router.get('/user/last-budget-status', auth, getLastBudgetStatus); // New endpoint to fetch last budget status
 
