@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchExpenses, fetchLastBudgetStatus, fetchSalary } from '../../services/api';
+import { fetchExpenses, fetchLastBudgetStatus } from '../../services/api';
 import { FaWallet, FaRegClock, FaRegCalendarAlt } from 'react-icons/fa';
 import { GrMoney, GrStatusGoodSmall } from "react-icons/gr";
 import { GiReceiveMoney } from "react-icons/gi";
@@ -32,7 +32,6 @@ const Report = ({ startDate }) => {
     const fetchReportData = async () => {
       let expenses = [];
       let lastBudgetStatus = {};
-      let salary = 0;
 
       try {
         expenses = await fetchExpenses();
@@ -47,10 +46,7 @@ const Report = ({ startDate }) => {
       } catch (error) {
       }
 
-      try {
-        salary = await fetchSalary();
-      } catch (error) {
-      }
+      
 
       const nullBudgetExpenses = expenses.filter(expense => expense.budget === null);
       const filteredExpenses = nullBudgetExpenses.filter(expense => new Date(expense.date) >= startDate);
@@ -71,13 +67,13 @@ const Report = ({ startDate }) => {
         ...prevState,
         totalExpenses,
         budgetUsage,
-        salary,
-        lastSalary: lastBudgetStatus.salary || 0,
+        totalIncome: lastBudgetStatus.totalIncome || 0,
         statusMessage: lastBudgetStatus.statusMessage || 'Status not available',
         period: lastBudgetStatus.period || 'N/A',
         customPeriod: lastBudgetStatus.customPeriod !== undefined ? lastBudgetStatus.customPeriod : 'N/A',
         startDate: lastBudgetStatus.startDate || 'N/A',
-        expirationDate: lastBudgetStatus.expirationDate || 'N/A'
+        expirationDate: lastBudgetStatus.expirationDate || 'N/A',
+        incomeCategories: lastBudgetStatus.incomeCategories || []
       }));
     };
 
@@ -120,12 +116,34 @@ const Report = ({ startDate }) => {
             </p>
 
             <div className="bg-gray-200 p-4 rounded-lg dark:bg-gray-600 mb-5">
-            {(reportData.lastSalary > 0 || reportData.salary > 0) && (
+            {(reportData.totalIncome > 0) && (
               <>
-              <p className="font-semibold flex items-center mb-3"><GiReceiveMoney className="mr-2" /> Salary: Rs. {reportData.lastSalary}</p>
-              <p className="font-semibold flex items-center mb-3"><FaRegClock className="mr-2" /> Period: {periodMessage}</p>
-              <p className="font-semibold flex items-center mb-3"><FaRegCalendarAlt className="mr-2" /> Start Date: {formattedStartDate}</p>
-              <p className="font-semibold flex items-center mb-3"><FaRegCalendarAlt className="mr-2" /> Valid Date: {formattedExpirationDate}</p>
+                <p className="font-semibold flex items-center mb-3">
+              <GiReceiveMoney className="mr-2" /> Total Income: Rs. {reportData.totalIncome}
+              </p>
+              <p className="font-semibold flex items-center mb-3">
+                <FaRegClock className="mr-2" /> Period: {periodMessage}
+              </p>
+              <p className="font-semibold flex items-center mb-3">
+                <FaRegCalendarAlt className="mr-2" /> Start Date: {formattedStartDate}
+              </p>
+              <p className="font-semibold flex items-center mb-3">
+                <FaRegCalendarAlt className="mr-2" /> Valid Date: {formattedExpirationDate}
+              </p>
+
+              {reportData.incomeCategories.length > 0 && (
+                <>
+                  <p className="font-bold mt-4 flex items-center">
+                    <GrMoney className="mr-2" /> Income by Category
+                  </p>
+                  {reportData.incomeCategories.map(category => (
+                    <p key={category.category} className="mb-2 flex items-center">
+                      <TbPoint className="mr-2" />
+                      {category.category}: Rs. {category.amount.toFixed(2)}
+                    </p>
+                  ))}
+                </>
+              )}
               </>
               
             )}

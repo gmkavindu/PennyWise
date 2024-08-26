@@ -1,5 +1,26 @@
 const mongoose = require('mongoose');
 
+const { Schema } = mongoose;
+
+const incomeDetailSchema = new Schema({
+  category: { type: String, required: true },
+  amount: { type: Number, required: true },
+});
+
+const incomeDetailsSchema = new Schema({
+  categories: [incomeDetailSchema], // Array of category objects
+  details: {
+    period: {
+      type: String,
+      enum: ['weekly', 'monthly', 'yearly', 'custom'],
+      default: 'monthly'
+    },
+    customPeriod: { type: Number },
+    startDate: { type: Date, default: Date.now },
+    expirationDate: { type: Date },
+  }
+});
+
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -50,23 +71,14 @@ const UserSchema = new mongoose.Schema({
       ref: 'Expense',
     },
   ],
-  salaryDetails: {
-    salary: { type: Number, default: 0 },
-    period: {
-      type: String,
-      enum: ['weekly', 'monthly', 'yearly', 'custom'], // Added 'custom'
-      default: 'monthly'
-    },
-    customPeriod: { type: Number }, // Custom period in days
-    startDate: { type: Date, default: Date.now },
-    expirationDate: { type: Date },
-  },
+  
+  incomeDetails: incomeDetailsSchema,
   
   lastBudgetStatus: {
     totalBudgets: { type: Number, default: 0 },
     totalExpenses: { type: Number, default: 0 },
     statusMessage: { type: String, default: '' },
-    salary: { type: Number, default: 0 },
+    totalIncome: { type: Number, default: 0 },
     period: {
       type: String,
       enum: ['weekly', 'monthly', 'yearly', 'custom'], // Added 'custom'
@@ -75,6 +87,10 @@ const UserSchema = new mongoose.Schema({
     customPeriod: { type: Number }, // Custom period in days
     startDate: { type: Date, default: Date.now },
     expirationDate: { type: Date },
+    incomeCategories: [{ // New field for category-wise income details
+      category: { type: String, required: true },
+      amount: { type: Number, required: true }
+    }]
 
   },
 

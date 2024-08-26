@@ -85,89 +85,84 @@ exports.getUserTips = async (req, res) => {
   }
 };
 
-// Update User Tips
-exports.updateUserTips = async (req, res) => {
-  const { tips, tipsGeneratedAt } = req.body;
-  try {
-    const user = await User.findById(req.user.id);
-
-    // Update user's last generated tips and tips generated timestamp
-    user.lastGeneratedTips = tips;
-    user.tipsGeneratedAt = tipsGeneratedAt;
-
-    await user.save();
-    res.json({ message: 'Tips updated successfully' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-exports.updateUserSalary = async (req, res) => {
+exports.updateUserIncomeDetails = async (req, res) => {
   try {
     const userId = req.user.id; // Get user ID from middleware
-    const { salary, period, startDate, customPeriod } = req.body;
+    const { categories, details } = req.body;
+    const { period, customPeriod, startDate } = details || {}; // Destructure details object
 
-    // Validate the period
-    const validPeriods = ['weekly', 'monthly', 'yearly', 'custom'];
-    if (!validPeriods.includes(period)) {
-      return res.status(400).json({ message: 'Invalid period value' });
-    }
-
-    const user = await User.findById(userId);
-
-    if (user) {
-      let expirationDate;
-
-      switch (period) {
-        case 'weekly':
-          expirationDate = new Date(startDate);
-          expirationDate.setDate(expirationDate.getDate() + 7);
-          break;
-        case 'monthly':
-          expirationDate = new Date(startDate);
-          expirationDate.setMonth(expirationDate.getMonth() + 1);
-          break;
-        case 'yearly':
-          expirationDate = new Date(startDate);
-          expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-          break;
-        case 'custom':
-          expirationDate = new Date(startDate);
-          expirationDate.setDate(expirationDate.getDate() + (customPeriod || 0));
-          break;
-        default:
-          expirationDate = new Date(startDate);
-          expirationDate.setMonth(expirationDate.getMonth() + 1);
+    // Validate categories
+    for (const category of categories) {
+      if (!category.category || typeof category.amount !== 'number') {
+        return res.status(400).json({ message: 'Each category must have a name and amount' });
       }
-
-      user.salaryDetails = {
-        salary,
-        period,
-        startDate,
-        customPeriod,
-        expirationDate
-      };
-      await user.save();
-
-      res.status(200).json(user.salaryDetails);
-    } else {
-      res.status(404).json({ message: 'User not found' });
     }
+
+    // Validate and parse dates
+    const parsedStartDate = new Date(startDate);
+    if (isNaN(parsedStartDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid startDate format' });
+    }
+
+    let expirationDateObj;
+
+    switch (period) {
+      case 'weekly':
+        expirationDateObj = new Date(parsedStartDate);
+        expirationDateObj.setDate(expirationDateObj.getDate() + 7);
+        break;
+      case 'monthly':
+        expirationDateObj = new Date(parsedStartDate);
+        expirationDateObj.setMonth(expirationDateObj.getMonth() + 1);
+        break;
+      case 'yearly':
+        expirationDateObj = new Date(parsedStartDate);
+        expirationDateObj.setFullYear(expirationDateObj.getFullYear() + 1);
+        break;
+      case 'custom':
+        expirationDateObj = new Date(parsedStartDate);
+        expirationDateObj.setDate(expirationDateObj.getDate() + (customPeriod || 0));
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid period value' });
+    }
+
+    // Convert expirationDate to ISO string format
+    const formattedExpirationDate = expirationDateObj.toISOString().split('T')[0];
+
+    // Update user income details
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.incomeDetails = {
+      categories,
+      details: {
+        period,
+        customPeriod,
+        startDate: parsedStartDate.toISOString().split('T')[0], // Convert to ISO string format
+        expirationDate: formattedExpirationDate
+      }
+    };
+
+    await user.save();
+    res.status(200).json(user.incomeDetails);
+
   } catch (error) {
+    console.error('Error updating income details:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 
-
-exports.getUserSalary = async (req, res) => {
+exports.getUserIncomeDetails = async (req, res) => {
   try {
-    const userId = req.user.id; // Assuming you're using a middleware to get the user ID
+    const userId = req.user.id; // Assuming you're using middleware to get the user ID
     const user = await User.findById(userId);
 
     if (user) {
-      res.status(200).json(user.salaryDetails); // Ensure salaryDetails contains full details including period dates
+      res.status(200).json(user.incomeDetails); // Return the updated incomeDetails
     } else {
       res.status(404).json({ message: 'User not found' });
     }
@@ -178,7 +173,7 @@ exports.getUserSalary = async (req, res) => {
 
 exports.saveBudgetStatus = async (req, res) => {
   try {
-    const { totalBudgets, totalExpenses, statusMessage, salary, period, customPeriod, startDate, expirationDate } = req.body;
+    const { totalBudgets, totalExpenses, statusMessage, totalIncome, period, customPeriod, startDate, expirationDate, incomeCategories } = req.body;
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -189,11 +184,7 @@ exports.saveBudgetStatus = async (req, res) => {
       totalBudgets,
       totalExpenses,
       statusMessage,
-      salary,
-      period,
-      customPeriod,
-      startDate,
-      expirationDate,
+      totalIncome, period, customPeriod, startDate, expirationDate, incomeCategories
     };
 
     await user.save();

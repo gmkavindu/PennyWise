@@ -4,7 +4,7 @@ import ExpenseForm from './ExpenseForm';
 import ExpenseTable from './ExpenseTable';
 import Navbar from '../Navbar';
 import Modal from '../Modal/Modal';
-import Footer from '../Footer'; // Make sure you import the Footer component
+import Footer from '../Footer';
 
 const ExpenseManager = () => {
   const [expenses, setExpenses] = useState([]);
