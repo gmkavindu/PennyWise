@@ -105,35 +105,50 @@ export const updatePrivacyPolicyAgreement = async (agreement) => {
 };
 
 // Update salary
-export const updateSalary = async (details) => {
+
+export const updateIncomeDetails = async (details) => {
   try {
-    const response = await axios.put(`${API_URL}/salary`, details, {
-      headers: { 'x-auth-token': localStorage.getItem('token') },
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    console.log('Sending details:', details);
+
+    const response = await axios.put(`${API_URL}/income`, details, {
+      headers: { 'x-auth-token': token },
     });
+
+    console.log('Response data:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error updating salary:', error);
+    console.error('Error updating income details:', error.response ? error.response.data : error.message);
     throw error;
   }
 };
+
+
+
+
 
 // Fetch salary
-export const fetchSalary = async () => {
+export const fetchIncomeDetails = async () => {
   try {
-    const response = await axios.get(`${API_URL}/salary`, {
+    const response = await axios.get(`${API_URL}/income`, {
       headers: { 'x-auth-token': localStorage.getItem('token') },
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching salary:', error);
+    console.error('Error fetching income details:', error);
     throw error;
   }
 };
 
+
 // New endpoint to save budget status
-export const saveBudgetStatusToUser = async (totalBudgets, totalExpenses, statusMessage, salary, period, customPeriod, startDate, expirationDate) => {
+export const saveBudgetStatusToUser = async (totalBudgets, totalExpenses, statusMessage, totalIncome, period, customPeriod, startDate, expirationDate, incomeCategories) => {
   try {
-    await axios.post(`${API_URL}/user/save-budget-status`, { totalBudgets, totalExpenses, statusMessage, salary, period, customPeriod, startDate, expirationDate }, {
+    await axios.post(`${API_URL}/user/save-budget-status`, { totalBudgets, totalExpenses, statusMessage, totalIncome, period, customPeriod, startDate, expirationDate, incomeCategories }, {
       headers: {
         'x-auth-token': localStorage.getItem('token'),
       },
