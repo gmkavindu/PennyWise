@@ -87,7 +87,7 @@ const VisualizationDashboard = () => {
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold mb-4 text-rose-600"><FaChartPie className="inline-block ml-2 text-xl " /> Past Expense Trend </h2>
+          <h2 className="text-2xl font-bold mb-4 text-rose-600"><FaChartLine className="inline-block ml-2 text-xl " /> Past Expense Trend </h2>
           <div className="shadow-lg rounded-lg overflow-hidden transition-transform transform-gpu hover:scale-105">
             <PastExpenseTrendChart startDate={startDate}/>
           </div>
@@ -100,7 +100,7 @@ const VisualizationDashboard = () => {
           </div>
         </div>
         <div>
-          <h2 className="text-2xl font-bold mb-4 mt-9 text-rose-600"><FaChartPie className="inline-block ml-2 text-xl " /> Past Expenses List </h2>
+          <h2 className="text-2xl font-bold mb-4 mt-9 text-rose-600"> Past Expenses List </h2>
           <div className="shadow-lg rounded-lg overflow-hidden transition-transform transform-gpu hover:scale-105">
             <PastExpenseTable startDate={startDate} />
           </div>
