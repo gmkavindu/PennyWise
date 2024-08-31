@@ -6,6 +6,7 @@ const PastExpenseTrendChart = ({ startDate }) => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [theme, setTheme] = useState('light');
   const [dataEmpty, setDataEmpty] = useState(false);
+  const [expenseDetails, setExpenseDetails] = useState({});
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
@@ -25,6 +26,7 @@ const PastExpenseTrendChart = ({ startDate }) => {
 
         const nullBudgetExpenses = expenses.filter(expense => expense.budget === null);
 
+        // Filter expenses based on the calculated start date
         const filteredExpenses = nullBudgetExpenses.filter(expense => new Date(expense.date) >= startDate);
 
         if (filteredExpenses.length === 0) {
@@ -34,17 +36,26 @@ const PastExpenseTrendChart = ({ startDate }) => {
           setDataEmpty(false);
         }
 
-        const sortedExpenses = filteredExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+        // Group expenses by date
+        const groupedExpenses = filteredExpenses.reduce((acc, expense) => {
+          const dateKey = new Date(expense.date).toLocaleDateString(); // Format date as MM/DD/YYYY
+          if (!acc[dateKey]) {
+            acc[dateKey] = {
+              totalAmount: 0,
+              details: [],
+            };
+          }
+          acc[dateKey].totalAmount += expense.amount;
+          acc[dateKey].details.push(expense);
+          return acc;
+        }, {});
 
-        const formatDate = (dateString) => {
-          const date = new Date(dateString);
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          return `${month}/${day}`;
-        };
+        // Extract dates and corresponding total amounts
+        const dates = Object.keys(groupedExpenses).sort((a, b) => new Date(a) - new Date(b));
+        const amounts = dates.map(date => groupedExpenses[date].totalAmount);
 
-        const dates = sortedExpenses.map(expense => formatDate(expense.date));
-        const amounts = sortedExpenses.map(expense => expense.amount);
+        // Set expense details for tooltips
+        setExpenseDetails(groupedExpenses);
 
         setChartData({
           labels: dates,
@@ -54,10 +65,12 @@ const PastExpenseTrendChart = ({ startDate }) => {
               data: amounts,
               borderColor: 'rgba(75,192,192,1)',
               backgroundColor: theme === 'light' ? 'rgba(75,192,192,0.2)' : 'rgba(255,255,255,0.2)',
+              pointBackgroundColor: theme === 'light' ? 'rgba(75,192,192,1)' : 'rgba(255,255,255,0.8)',
             },
           ],
         });
       } catch (error) {
+        setDataEmpty(true);
       }
     };
 
@@ -81,9 +94,20 @@ const PastExpenseTrendChart = ({ startDate }) => {
     plugins: {
       tooltip: {
         callbacks: {
+          title: (tooltipItems) => {
+            return `Date: ${tooltipItems[0].label}`;
+          },
           label: (tooltipItem) => {
-            const value = tooltipItem.raw || 0;
-            return `RS. ${value}`;
+            const date = tooltipItem.label;
+            const expensesForDate = expenseDetails[date]?.details || [];
+            const totalAmount = expenseDetails[date]?.totalAmount || 0;
+
+            const total = `Total: RS. ${totalAmount}`;
+            const details = expensesForDate.map(expense =>
+              `RS. ${expense.amount} - ${expense.description} (${expense.category})`
+            );
+
+            return [total, ...details];
           },
         },
       },
