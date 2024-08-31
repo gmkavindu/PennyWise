@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { fetchExpenses, fetchBudgets } from '../services/api';
 import ExpenseCategoryChart from './visualization/ExpenseCategoryChartDashboard';
 import ProgressBar from './ProgressBar';
@@ -23,6 +23,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isProgressBarModalVisible, setIsProgressBarModalVisible] = useState(false);
+  const [progressBarCategory, setProgressBarCategory] = useState('');
+  const [isAddExpenseFormVisible, setIsAddExpenseFormVisible] = useState(false);
+  const [theme, setTheme] = useState('light');
+
+
 
   useEffect(() => {
     const getData = async () => {
@@ -93,7 +99,49 @@ const Dashboard = () => {
     setIsModalVisible(false);
     setExpenseToEdit(null);
   };
+  
+  const handleProgressBarModalOpen = (category) => {
+    setProgressBarCategory(category);
+    setIsProgressBarModalVisible(true);
+    setIsAddExpenseFormVisible(false);
+  };
 
+  const handleAddExpenseFormOpen = () => {
+    setIsAddExpenseFormVisible(true);
+  };
+  
+  
+  const handleProgressBarModalClose = () => {
+    setIsProgressBarModalVisible(false);
+    setProgressBarCategory('');
+  };
+  const modalRef = useRef(null);
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      handleProgressBarModalClose();
+    }
+  };
+
+  if (isProgressBarModalVisible) {
+    document.addEventListener('mousedown', handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [isProgressBarModalVisible]);
+
+useEffect(() => {
+  // Get the stored theme from localStorage
+  const storedTheme = localStorage.getItem('theme') || 'light';
+  setTheme(storedTheme);
+  document.documentElement.setAttribute('data-theme', storedTheme);
+}, []);
+
+
+  
 
 
   useEffect(() => {
@@ -257,6 +305,7 @@ const Dashboard = () => {
                     category={budget.category}
                     total={budget.limit}
                     current={totalExpenses}
+                    onClick={() => handleProgressBarModalOpen(budget.category)}
                   />
                 );
               })}
@@ -284,6 +333,63 @@ const Dashboard = () => {
           onClose={handleCloseModal}
         />
       </Modal>
+
+      {/* Modal to display expenses for the selected category */}
+      {isProgressBarModalVisible && (
+        <div className={`fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-60 dark:bg-gray-800 dark:bg-opacity-70`}>
+          <div
+            className={`${
+              theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-gray-100'
+            } rounded-lg shadow-lg p-6 max-w-md w-full relative`}
+            ref={modalRef}
+          >
+            <h3 className="text-xl font-semibold mb-4">
+              {progressBarCategory} Expenses
+            </h3>
+            <button
+              onClick={handleProgressBarModalClose}
+              className="absolute top-2 right-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <button
+              onClick={handleAddExpenseFormOpen}
+              className={`px-4 py-2 rounded shadow ${
+                theme === 'light' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-blue-700 text-white hover:bg-blue-800'
+              } mb-4`}
+            >
+              Add Expense
+            </button>
+            <ul>
+              {expenses
+                .filter((expense) => budgetCategoryMap[expense.budget] === progressBarCategory)
+                .map((expense) => (
+                  <li key={expense._id} className="mb-2">
+                    <p className="font-semibold">{expense.description}</p>
+                    <p>Amount: RS. {expense.amount}</p>
+                    <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
+                  </li>
+                ))}
+              {expenses.every((expense) => budgetCategoryMap[expense.budget] !== progressBarCategory) && (
+                <p className="text-gray-500 dark:text-gray-400">No expenses found for this category.</p>
+              )}
+            </ul>
+            {isAddExpenseFormVisible && (
+              <ExpenseForm
+                onSave={async (expense) => {
+                  await handleSaveExpense({ ...expense, budget: budgetCategoryMap[progressBarCategory] });
+                  handleProgressBarModalClose(); // Close the modal after saving
+                }}
+                expenseToEdit={null} // Start with a new expense
+                clearEdit={() => {}}
+                onClose={() => setIsAddExpenseFormVisible(false)}
+              />
+            )}
+          </div>
+        </div>
+      )}
+     
     </div>
   );
 };
