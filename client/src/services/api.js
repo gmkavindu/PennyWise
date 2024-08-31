@@ -104,6 +104,28 @@ export const updatePrivacyPolicyAgreement = async (agreement) => {
   }
 };
 
+export const fetchPrivacyPolicyAgreement = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found.');
+
+    const response = await axios.get(`${API_URL}/agree-to-privacy-policy`, {
+      headers: {
+        'x-auth-token': token,
+      },
+    });
+
+    if (response.status === 200 && typeof response.data.agreedToPrivacyPolicy === 'boolean') {
+      return response.data.agreedToPrivacyPolicy;
+    } else {
+      throw new Error('Invalid response from server.');
+    }
+  } catch (error) {
+    console.error('Error fetching privacy policy agreement:', error.message || error);
+    throw error;
+  }
+};
+
 // Update salary
 
 export const updateIncomeDetails = async (details) => {
