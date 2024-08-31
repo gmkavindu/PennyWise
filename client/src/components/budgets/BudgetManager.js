@@ -384,75 +384,75 @@ const BudgetManager = () => {
 
   return (
     <div className={`${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} min-h-screen flex flex-col`}>
-      <Navbar theme={theme} />
-      <div className="flex-grow max-w-4xl mx-auto p-6 border rounded-lg shadow-md mt-32">
+    <Navbar theme={theme} />
+    <div className="flex-grow">
+      <div className="max-w-4xl mx-auto p-6 border rounded-lg shadow-md mt-32">
         <h2 className="text-center text-2xl font-bold mb-6 animate-fadeIn">Budget Manager</h2>
-          {/* Budget Status Messages */}
-          {income > 0 && (
-            <div
-              className={`text-center mb-6 p-4 rounded-lg shadow-md ${
-                theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'
-              }`}
-            >
-              {isBudgetExpired ? (
-                <div
-                  className={`p-4 rounded-md border ${
-                    theme === 'light' ? 'bg-red-50 border-red-200' : 'bg-rose-900 border-rose-700'
+
+        {/* Budget Status Messages */}
+        {income > 0 && (
+          <div
+            className={`text-center mb-6 p-4 rounded-lg shadow-md ${
+              theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'
+            }`}
+          >
+            {isBudgetExpired ? (
+              <div
+                className={`p-4 rounded-md border ${
+                  theme === 'light' ? 'bg-red-50 border-red-200' : 'bg-rose-900 border-rose-700'
+                }`}
+              >
+                <p
+                  className={`font-semibold text-lg ${
+                    theme === 'light' ? 'text-rose-500' : 'text-rose-300'
                   }`}
                 >
-                  <p
-                    className={`font-semibold text-lg ${
-                      theme === 'light' ? 'text-rose-500' : 'text-rose-300'
-                    }`}
-                  >
-                    Your budget period has expired.
-                  </p>
-                  <p
-                    className={`mt-2 ${
-                      theme === 'light' ? 'text-rose-700' : 'text-rose-400'
-                    }`}
-                  >
-                    Started on: {formattedStartDate}. {periodMessage}
-                  </p>
-                  {budgets.length > 0 && expensesWithBudget.length > 0 && (
-                    <button
-                      className={`mt-4 py-2 px-4 rounded-md transition duration-150 ease-in-out ${
-                        theme === 'light'
-                          ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                          : 'bg-rose-700 hover:bg-rose-800 text-gray-100'
-                      }`}
-                      onClick={handleResetBudgetsClick}
-                    >
-                      Reset All Budgets
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div
-                  className={`p-4 rounded-md border ${
-                    theme === 'light' ? 'bg-green-50 border-green-200' : 'bg-green-900 border-green-700'
+                  Your budget period has expired.
+                </p>
+                <p
+                  className={`mt-2 ${
+                    theme === 'light' ? 'text-rose-700' : 'text-rose-400'
                   }`}
                 >
-                  <p
-                    className={`font-semibold text-lg ${
-                      theme === 'light' ? 'text-green-500' : 'text-green-300'
+                  Started on: {formattedStartDate}. {periodMessage}
+                </p>
+                {budgets.length > 0 && expensesWithBudget.length > 0 && (
+                  <button
+                    className={`mt-4 py-2 px-4 rounded-md transition duration-150 ease-in-out ${
+                      theme === 'light'
+                        ? 'bg-rose-500 hover:bg-rose-600 text-white'
+                        : 'bg-rose-700 hover:bg-rose-800 text-gray-100'
                     }`}
+                    onClick={handleResetBudgetsClick}
                   >
-                    Budget is active.
-                  </p>
-                  <p
-                    className={`mt-2 ${
-                      theme === 'light' ? 'text-green-700' : 'text-green-400'
-                    }`}
-                  >
-                    Started on: {formattedStartDate}. Valid Until: {formattedExpirationDate}. {periodMessage}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-
+                    Reset All Budgets
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div
+                className={`p-4 rounded-md border ${
+                  theme === 'light' ? 'bg-green-50 border-green-200' : 'bg-green-900 border-green-700'
+                }`}
+              >
+                <p
+                  className={`font-semibold text-lg ${
+                    theme === 'light' ? 'text-green-500' : 'text-green-300'
+                  }`}
+                >
+                  Budget is active.
+                </p>
+                <p
+                  className={`mt-2 ${
+                    theme === 'light' ? 'text-green-700' : 'text-green-400'
+                  }`}
+                >
+                  Started on: {formattedStartDate}. Valid Until: {formattedExpirationDate}. {periodMessage}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex justify-between mb-4">
           <button
@@ -469,17 +469,17 @@ const BudgetManager = () => {
           </button>
 
           {budgets.length > 0 && expensesWithBudget.length > 0 && income === 0 && (
-              <button
-                className={`text-white py-2 px-4 rounded-md ${
-                  theme === 'light'
-                    ? 'bg-rose-500 hover:bg-rose-600 '
-                    : 'bg-rose-700 hover:bg-rose-800 '
-                }`}
-                onClick={handleResetBudgetsClick}
-              >
-                Reset All Budgets
-              </button>
-            )}
+            <button
+              className={`text-white py-2 px-4 rounded-md ${
+                theme === 'light'
+                  ? 'bg-rose-500 hover:bg-rose-600 '
+                  : 'bg-rose-700 hover:bg-rose-800 '
+              }`}
+              onClick={handleResetBudgetsClick}
+            >
+              Reset All Budgets
+            </button>
+          )}
         </div>
 
         {showAddPopup && (
@@ -603,8 +603,9 @@ const BudgetManager = () => {
           </div>
         )}
       </div>
-      <Footer />
     </div>
+    <Footer />
+  </div>
   );
 };
 
