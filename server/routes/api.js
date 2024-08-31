@@ -61,4 +61,19 @@ router.post('/agree-to-privacy-policy', auth, async (req, res) => {
   }
 });
 
+router.get('/agree-to-privacy-policy', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('agreedToPrivacyPolicy');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ agreedToPrivacyPolicy: user.agreedToPrivacyPolicy });
+  } catch (error) {
+    console.error('Error fetching privacy policy agreement:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
