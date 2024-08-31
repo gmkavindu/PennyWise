@@ -45,9 +45,9 @@ const Feedback = () => {
   };
 
   return (
-    <div className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-white text-black' : 'bg-gray-800 text-white'} mt-24 mb-20`}>
+    <div className={`flex flex-col min-h-screen ${theme === 'light' ? 'bg-white text-black' : 'bg-gray-800 text-white'}`}>
       <Navbar />
-      <div className="container mx-auto py-4 px-4 max-w-screen-lg mt-24 mb-20 flex-1">
+      <main className="flex-grow container mx-auto py-4 px-4 max-w-screen-lg mt-24">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Feedback Form</h1>
         </div>
@@ -86,7 +86,7 @@ const Feedback = () => {
             </ul>
           )}
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );
