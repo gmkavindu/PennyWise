@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { fetchFinancialTips, fetchBudgets, fetchExpenses, updatePrivacyPolicyAgreement } from '../services/api';
+import { fetchFinancialTips, fetchBudgets, fetchExpenses, updatePrivacyPolicyAgreement, fetchPrivacyPolicyAgreement } from '../services/api';
 import Navbar from './Navbar';
 import { Alert, Container, Button } from 'react-bootstrap';
 import { FiLoader, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
@@ -15,7 +15,7 @@ const FinancialTips = () => {
   const [reloadOnFirstError, setReloadOnFirstError] = useState(false);
   const [lastError, setLastError] = useState(false);
   const [hasBudgetsOrExpenses, setHasBudgetsOrExpenses] = useState(false);
-  const [privacyPolicyAgreement, setPrivacyPolicyAgreement] = useState(false);
+  const [privacyPolicyAgreement, setPrivacyPolicyAgreement] = useState(null);
   const [privacyPolicyLoading, setPrivacyPolicyLoading] = useState(true);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
 
@@ -59,11 +59,10 @@ const FinancialTips = () => {
       if (!reloadOnFirstError) {
         setReloadOnFirstError(true);
         setLoadingMessage('Failed to load tips. Retrying in 5 seconds...');
-        window.location.reload();
+        
       }
 
-      // Set lastError to true to indicate last error occurred
-      setLastError(true);
+      setLastError(true); // Set lastError to true to indicate last error occurred
     }
   }, [parseTips, reloadOnFirstError]);
 
@@ -89,21 +88,19 @@ const FinancialTips = () => {
 
   const checkPrivacyPolicyAgreement = useCallback(async () => {
     try {
-      const response = await fetch('/api/user/me', {
-        headers: {
-          'x-auth-token': localStorage.getItem('token'),
-        },
-      }).then(res => res.json());
+      const agreement = await fetchPrivacyPolicyAgreement();
+      setPrivacyPolicyAgreement(agreement);
+      setPrivacyPolicyLoading(false); // Mark loading as done
 
-      if (response.agreedToPrivacyPolicy) {
-        setPrivacyPolicyAgreement(true);
+      if (agreement) {
         checkBudgetsAndExpenses();
       } else {
-        setPrivacyPolicyAgreement(false);
+        setLoading(false);
       }
     } catch (error) {
-    } finally {
-      setPrivacyPolicyLoading(false);
+      console.error('Failed to fetch privacy policy agreement:', error);
+      setError('Failed to fetch privacy policy agreement. Please try again later.');
+      setPrivacyPolicyLoading(false); // Mark loading as done even on error
     }
   }, [checkBudgetsAndExpenses]);
 
@@ -216,7 +213,7 @@ const FinancialTips = () => {
           {privacyPolicyLoading ? (
             <div className="text-center mt-4">
               <Alert variant="info" className="flex items-center justify-center">
-                <FiLoader className="animate-spin mx-auto text-2xl text-blue-500" />
+                <FiLoader className="animate-spin text-2xl text-blue-500" />
                 Checking privacy policy status...
               </Alert>
             </div>
