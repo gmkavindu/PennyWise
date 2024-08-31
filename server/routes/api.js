@@ -61,24 +61,19 @@ router.post('/agree-to-privacy-policy', auth, async (req, res) => {
   }
 });
 
-// @route   POST /api/agree-to-privacy-policy
-// @desc    Update user agreement to privacy policy
-// @access  Private
-router.post('/agree-to-privacy-policy', auth, async (req, res) => {
+router.get('/agree-to-privacy-policy', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select('agreedToPrivacyPolicy');
 
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    user.agreedToPrivacyPolicy = req.body.agreement;
-    await user.save();
+    res.status(200).json({ agreedToPrivacyPolicy: user.agreedToPrivacyPolicy });
+  } catch (error) {
+    console.error('Error fetching privacy policy agreement:', error);
+    res.status(500).json({ message: 'Server error' });
 
-    res.status(200).json({ message: 'Privacy policy agreement updated successfully' });
-  } catch (err) {
-    console.error('Error updating privacy policy agreement:', err);
-    res.status(500).json({ message: 'Failed to update privacy policy agreement' });
   }
 });
 

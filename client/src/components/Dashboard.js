@@ -361,20 +361,28 @@ useEffect(() => {
             >
               Add Expense
             </button>
-            <ul>
-              {expenses
-                .filter((expense) => budgetCategoryMap[expense.budget] === progressBarCategory)
-                .map((expense) => (
-                  <li key={expense._id} className="mb-2">
-                    <p className="font-semibold">{expense.description}</p>
-                    <p>Amount: RS. {expense.amount}</p>
-                    <p>Date: {new Date(expense.date).toLocaleDateString()}</p>
-                  </li>
-                ))}
-              {expenses.every((expense) => budgetCategoryMap[expense.budget] !== progressBarCategory) && (
-                <p className="text-gray-500 dark:text-gray-400">No expenses found for this category.</p>
-              )}
-            </ul>
+            
+            {/* Scrollable container */}
+            <div className="max-h-72 overflow-y-auto mb-4">
+              <ul className="space-y-3">
+                {expenses
+                  .filter((expense) => budgetCategoryMap[expense.budget] === progressBarCategory)
+                  .map((expense) => (
+                    <li key={expense._id} className="border-b pb-2">
+                      <p className="font-semibold">
+                        <span className="mr-2">•</span>
+                        {new Date(expense.date).toLocaleDateString('en-CA')}
+                      </p>
+                      <p>RS. {expense.amount}</p>
+                      <p>{expense.description}</p> 
+                    </li>
+                  ))}
+                {expenses.every((expense) => budgetCategoryMap[expense.budget] !== progressBarCategory) && (
+                  <p className="text-gray-500 dark:text-gray-400">No expenses found for this category.</p>
+                )}
+              </ul>
+            </div>
+
             {isAddExpenseFormVisible && (
               <ExpenseForm
                 onSave={async (expense) => {
