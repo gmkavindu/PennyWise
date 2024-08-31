@@ -91,7 +91,6 @@ const BudgetManager = () => {
     const fetchIncomeData = async () => {
       try {
         const incomeData = await fetchIncomeDetails();
-        console.log('Fetched income data:', incomeData); // Log the data for inspection
     
         // Check if incomeData and incomeData.categories are defined and are arrays
         if (incomeData && Array.isArray(incomeData.categories)) {
@@ -105,10 +104,8 @@ const BudgetManager = () => {
           setStartDate(incomeData.details.startDate);
           setIncomeDetails(incomeData.categories); // Update this to use categories
         } else {
-          console.error('Income details not found or is not an array:', incomeData);
         }
       } catch (error) {
-        console.error('Error fetching income details:', error);
       }
     };
     
@@ -331,6 +328,7 @@ const BudgetManager = () => {
   const handleConfirmReset = async () => {
     setShowConfirmReset(false); // Hide confirmation dialog
     await handleResetBudgets();
+    window.location.reload();
   };
 
   const handleCancelReset = () => {
@@ -385,9 +383,9 @@ const BudgetManager = () => {
   const expensesWithBudget = expenses.filter(expense => expense.budget !== null);
 
   return (
-    <div className={`${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} min-h-screen transition-colors duration-500 ease-in-out`}>
+    <div className={`${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'} min-h-screen flex flex-col`}>
       <Navbar theme={theme} />
-      <div className="max-w-4xl mx-auto p-6 border rounded-lg shadow-md mt-32">
+      <div className="flex-grow max-w-4xl mx-auto p-6 border rounded-lg shadow-md mt-32">
         <h2 className="text-center text-2xl font-bold mb-6 animate-fadeIn">Budget Manager</h2>
           {/* Budget Status Messages */}
           {income > 0 && (

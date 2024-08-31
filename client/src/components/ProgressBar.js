@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-const ProgressBar = ({ category, total, current }) => {
+const ProgressBar = ({ category, total, current, onClick }) => {
   const percentage = (current / total) * 100;
 
   useEffect(() => {
@@ -12,7 +12,7 @@ const ProgressBar = ({ category, total, current }) => {
   }, []);
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 cursor-pointer" onClick={onClick}>
       <h3 className={`text-lg font-medium mb-2 ${localStorage.getItem('theme') === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
         {category}
       </h3>
@@ -36,6 +36,7 @@ ProgressBar.propTypes = {
   category: PropTypes.string.isRequired,
   total: PropTypes.number.isRequired,
   current: PropTypes.number.isRequired,
+  onClick: PropTypes.func.isRequired,  // Added onClick prop
 };
 
 export default ProgressBar;
