@@ -6,12 +6,14 @@ const ExpenseTrendChart = () => {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [theme, setTheme] = useState('light');
   const [dataEmpty, setDataEmpty] = useState(false);
+  const [expenseDetails, setExpenseDetails] = useState({});
+  const [timePeriod, setTimePeriod] = useState('3 months'); // Default time period
   const chartRef = useRef(null);
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
-      setTheme(storedTheme); // Set theme from localStorage
+      setTheme(storedTheme);
     }
   }, []);
 
@@ -22,11 +24,31 @@ const ExpenseTrendChart = () => {
         if (!expenses || expenses.length === 0) throw new Error('No expenses fetched');
 
         const BudgetExpenses = expenses.filter(expense => expense.budget !== null);
-
         const today = new Date();
-        const past30Days = new Date(today.setDate(today.getDate() - 30));
 
-        const filteredExpenses = BudgetExpenses.filter(expense => new Date(expense.date) >= past30Days);
+        // Calculate start date based on selected time period
+        let startDate = new Date();
+        switch (timePeriod) {
+          case 'Last week':
+            startDate.setDate(today.getDate() - 7);
+            break;
+          case '1 month':
+            startDate.setMonth(today.getMonth() - 1);
+            break;
+          case '2 months':
+            startDate.setMonth(today.getMonth() - 2);
+            break;
+          case '3 months':
+            startDate.setMonth(today.getMonth() - 3);
+            break;
+          case '1 year':
+            startDate.setFullYear(today.getFullYear() - 1);
+            break;
+          default:
+            startDate.setMonth(today.getMonth() - 1);
+        }
+
+        const filteredExpenses = BudgetExpenses.filter(expense => new Date(expense.date) >= startDate);
 
         if (filteredExpenses.length === 0) {
           setDataEmpty(true);
@@ -35,19 +57,26 @@ const ExpenseTrendChart = () => {
           setDataEmpty(false);
         }
 
-        // Sort filtered expenses by date
-        const sortedExpenses = filteredExpenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+        // Group expenses by date
+        const groupedExpenses = filteredExpenses.reduce((acc, expense) => {
+          const dateKey = new Date(expense.date).toLocaleDateString(); // Format date as MM/DD/YYYY
+          if (!acc[dateKey]) {
+            acc[dateKey] = {
+              totalAmount: 0,
+              details: [],
+            };
+          }
+          acc[dateKey].totalAmount += expense.amount;
+          acc[dateKey].details.push(expense);
+          return acc;
+        }, {});
 
-        // Format dates as MM/DD
-        const formatDate = (dateString) => {
-          const date = new Date(dateString);
-          const day = String(date.getDate()).padStart(2, '0');
-          const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns 0-based month
-          return `${month}/${day}`;
-        };
+        // Extract dates and corresponding total amounts
+        const dates = Object.keys(groupedExpenses).sort((a, b) => new Date(a) - new Date(b));
+        const amounts = dates.map(date => groupedExpenses[date].totalAmount);
 
-        const dates = sortedExpenses.map(expense => formatDate(expense.date));
-        const amounts = sortedExpenses.map(expense => expense.amount);
+        // Set expense details for tooltips
+        setExpenseDetails(groupedExpenses);
 
         setChartData({
           labels: dates,
@@ -57,6 +86,7 @@ const ExpenseTrendChart = () => {
               data: amounts,
               borderColor: 'rgba(75,192,192,1)',
               backgroundColor: theme === 'light' ? 'rgba(75,192,192,0.2)' : 'rgba(255,255,255,0.2)',
+              pointBackgroundColor: theme === 'light' ? 'rgba(75,192,192,1)' : 'rgba(255,255,255,0.8)',
             },
           ],
         });
@@ -66,7 +96,7 @@ const ExpenseTrendChart = () => {
     };
 
     getData();
-  }, [theme]);
+  }, [theme, timePeriod]); // Depend on timePeriod as well to fetch data when it changes
 
   const chartOptions = {
     responsive: true,
@@ -75,9 +105,9 @@ const ExpenseTrendChart = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          color: theme === 'light' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)', // Adjust tick color based on theme
+          color: theme === 'light' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
           callback: function (value) {
-            return `RS. ${value}`; // Add currency symbol in front of the amount
+            return `RS. ${value}`;
           },
         },
       },
@@ -85,9 +115,20 @@ const ExpenseTrendChart = () => {
     plugins: {
       tooltip: {
         callbacks: {
+          title: (tooltipItems) => {
+            return `Date: ${tooltipItems[0].label}`;
+          },
           label: (tooltipItem) => {
-            const value = tooltipItem.raw || 0;
-            return `RS. ${value}`;
+            const date = tooltipItem.label;
+            const expensesForDate = expenseDetails[date]?.details || [];
+            const totalAmount = expenseDetails[date]?.totalAmount || 0;
+
+            const total = `Total: RS. ${totalAmount}`;
+            const details = expensesForDate.map(expense =>
+              `RS. ${expense.amount} - ${expense.description} (${expense.category})`
+            );
+
+            return [total, ...details];
           },
         },
       },
@@ -96,6 +137,25 @@ const ExpenseTrendChart = () => {
 
   return (
     <div className={`shadow-md rounded-lg p-4 ${theme === 'light' ? 'bg-white text-gray-900' : 'bg-gray-800 text-white'}`}>
+      {/* Time Period Selection */}
+      <div className="mb-4 flex items-center">
+        <label htmlFor="timePeriod" className={`mr-2 font-medium ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+          Select Time Period:
+        </label>
+        <select
+          id="timePeriod"
+          value={timePeriod}
+          onChange={(e) => setTimePeriod(e.target.value)}
+          className={`p-2 border rounded ${theme === 'light' ? 'border-gray-300 bg-white text-gray-900' : 'border-gray-600 bg-gray-700 text-white'}`}
+        >
+          <option value="Last week">Last Week</option>
+          <option value="1 month">Last Month</option>
+          <option value="2 months">Last 2 Months</option>
+          <option value="3 months">Last 3 Months</option>
+          <option value="1 year">Last Year</option>
+        </select>
+      </div>
+
       {dataEmpty ? (
         <div className={`py-4 text-${theme === 'dark' ? 'white' : 'gray-900'} text-center`}>
           No data available.
